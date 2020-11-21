@@ -18,6 +18,7 @@
     <ClCompile Include="Source\Map.cpp" />
     <ClCompile Include="Source\PerfTimer.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
+    <ClCompile Include="Source\Physics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Window.h" />
@@ -55,6 +56,8 @@
     <ClInclude Include="Source\Map.h" />
     <ClInclude Include="Source\PerfTimer.h" />
     <ClInclude Include="Source\Timer.h" />
+    <ClInclude Include="Source\Collider.h" />
+    <ClInclude Include="Source\Physics.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="External">
