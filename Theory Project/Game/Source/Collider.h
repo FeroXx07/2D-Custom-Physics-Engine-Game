@@ -6,7 +6,7 @@
 
 struct SDL_Rect;
 
-class Collider : public Module
+class Collider
 {
 public:
 
@@ -16,20 +16,11 @@ public:
 
 	bool Start();
 
-	bool PreUpdate();
-
-	bool Update(float dt);
-
 	bool CleanUp();
 
 	bool CheckCollision(SDL_Rect r1, SDL_Rect r2) const;
 
 	void ClearColliders();
-
-	void DebugDraw();
-
-private:
-	bool debug = false;
 };
 
 #endif

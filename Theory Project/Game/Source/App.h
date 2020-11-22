@@ -20,6 +20,7 @@ class Textures;
 class Audio;
 class Scene;
 class Map;
+class Physics;
 
 class App
 {
@@ -91,7 +92,7 @@ public:
 	Audio* audio;
 	Scene* scene;
 	Map* map;
-
+	Physics* physics;
 private:
 
 	int argc;
