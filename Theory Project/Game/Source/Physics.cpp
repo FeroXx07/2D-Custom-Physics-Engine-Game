@@ -31,19 +31,13 @@ bool Physics::Awake()
 
 bool Physics::Start()
 {
+	
 	return true;
 }
 
 bool Physics::Update(float dt)
 {
-	ListItem<Body*>* list;
-
-	for (list = bodyList.start; list != NULL; list = list->next)
-	{
-		// Integrate
-		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
-			Integrate((DynamicBody*)list->data, dt);
-	}
+	Step(dt);
 
 	return true;
 }
@@ -56,10 +50,13 @@ bool Physics::PostUpdate()
 	if (app->input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN)
 		ret = false;
 
+	if (app->input->GetKey(SDL_SCANCODE_F1) == KEY_DOWN)
+		debug = !debug;
+
 	// Collisions part: 
 
 	// Debug part:
-
+	DebugDraw();
 	return ret;
 }
 
@@ -74,29 +71,81 @@ void Physics::DebugDraw()
 {
 	if (debug)
 	{
+		ListItem<Body*>* list;
 
+		for (list = bodyList.start; list != NULL; list = list->next)
+		{
+			// Integrate
+			Draw(list->data);
+		}
 	}
 }
 
 void Physics::Integrate(DynamicBody* item, float dt)
 {
+	// Sum of all acceleration in both axis
+	float sumAccelerationY = (item->acceleration.y + item->gravity.y) * item->mass;
+
+
 	item->position.x += item->velocity.x * dt + 0.5f * item->acceleration.x * dt * dt;
 	item->velocity.x += item->acceleration.x * dt;
 
-	item->position.y += item->velocity.y * dt + 0.5f * item->acceleration.y * dt * dt;
-	item->velocity.y += item->acceleration.y * dt;
+	item->position.y += item->velocity.y * dt + 0.5f * sumAccelerationY * dt * dt;
+	item->velocity.y += sumAccelerationY * dt;
 }
 
-Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL)
+void Physics::Step(float dt)
+{
+	// Integrate
+	ListItem<Body*>* list;
+
+	for (list = bodyList.start; list != NULL; list = list->next)
+	{
+		// Integrate
+		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+		{
+			Integrate((DynamicBody*)list->data, dt);
+			list->data->collider->SetPos(list->data->position.x, list->data->position.y);
+		}
+	}
+
+	//Set collider correctly
+}
+
+void Physics::Draw(Body* body)
+{
+	if (body->collider != NULL)
+	{
+		app->render->DrawRectangle(body->collider->r1, 0, 100, 0);
+	}
+}
+
+Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , SDL_Texture* texture_ , Collider* collider_ , fPoint velocity_ , fPoint gravity_ , fPoint acceleration_ , uint mass_)
 {
 	if (bodyType_ == STATIC_BODY)
 	{
-		Body* newBody = new StaticBody(bodyType_, colliderType_, texture_, collider_);
+		Body* newBody = new StaticBody(colliderType_, texture_, collider_,mass_);
+		bodyList.add(newBody);
 		return newBody;
 	}
 	else if (bodyType_ == DYNAMIC_BODY)
 	{
-		Body* newBody = new StaticBody(bodyType_, colliderType_, texture_, collider_);
+		Body* newBody = new DynamicBody(velocity_, gravity_, acceleration_,colliderType_, texture_, collider_,mass_);
+		bodyList.add(newBody);
 		return newBody;
 	}
+}
+
+void DynamicBody::ApplyForce(iPoint newtons)
+{
+	// F = ma
+	this->acceleration.x = newtons.x / this->mass;
+	this->acceleration.y = newtons.y / this->mass;
+}
+
+void DynamicBody::ApplyForce(int newtonsX, int newtonsY)
+{
+	// F = ma
+	this->acceleration.x = newtonsX / this->mass;
+	this->acceleration.y = newtonsY / this->mass;
 }

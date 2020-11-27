@@ -9,6 +9,8 @@
 
 #include "Defs.h"
 #include "Log.h"
+#include "Physics.h"
+
 
 Scene::Scene() : Module()
 {
@@ -33,11 +35,18 @@ bool Scene::Start()
 {
 	// L03: DONE: Load map
 	//app->map->Load("hello2.tmx");
-	app->map->Load("iso_walk.tmx");
 	
 	// Load music
 	app->audio->PlayMusic("Assets/audio/music/music_spy.ogg");
+	
+	Collider* my = new Collider({ 0,0,100,100 });
+	Body*myBody = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my, { 0.0f,0.0f }, { 0.0f,5.0f });
+	myBody->position = { 100.0f,100.f };
 
+	Collider* my2 = new Collider({ 0,0,100,100 });
+	Body* myBody2 = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my2, { 0.0f,0.0f }, { 0.0f,5.0f });
+	myBody2->position = { 600.0f,100.f };
+	myBody2->mass = 10;
 	return true;
 }
 
@@ -71,8 +80,6 @@ bool Scene::Update(float dt)
 		app->render->camera.x += ceil(200.0f * dt);
 
 	// Draw map
-	app->map->Draw();
-
 	// L03: DONE 7: Set the window title with map/tileset info
 	/*SString title("Map:%dx%d Tiles:%dx%d Tilesets:%d",
 				   app->map->data.width, app->map->data.height,

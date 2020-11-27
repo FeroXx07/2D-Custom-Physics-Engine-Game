@@ -115,9 +115,9 @@ void Render::SetBackgroundColor(SDL_Color color)
 	background = color;
 }
 
-void Render::SetViewPort(const SDL_Rect& rect)
+void Render::SetViewPort(const SDL_Rect& r1)
 {
-	SDL_RenderSetViewport(renderer, &rect);
+	SDL_RenderSetViewport(renderer, &r1);
 }
 
 void Render::ResetViewPort()
@@ -131,22 +131,22 @@ bool Render::DrawTexture(SDL_Texture* texture, int x, int y, const SDL_Rect* sec
 	bool ret = true;
 	uint scale = app->win->GetScale();
 
-	SDL_Rect rect;
-	rect.x = (int)(camera.x * speed) + x * scale;
-	rect.y = (int)(camera.y * speed) + y * scale;
+	SDL_Rect r1;
+	r1.x = (int)(camera.x * speed) + x * scale;
+	r1.y = (int)(camera.y * speed) + y * scale;
 
 	if(section != NULL)
 	{
-		rect.w = section->w;
-		rect.h = section->h;
+		r1.w = section->w;
+		r1.h = section->h;
 	}
 	else
 	{
-		SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+		SDL_QueryTexture(texture, NULL, NULL, &r1.w, &r1.h);
 	}
 
-	rect.w *= scale;
-	rect.h *= scale;
+	r1.w *= scale;
+	r1.h *= scale;
 
 	SDL_Point* p = NULL;
 	SDL_Point pivot;
@@ -158,7 +158,7 @@ bool Render::DrawTexture(SDL_Texture* texture, int x, int y, const SDL_Rect* sec
 		p = &pivot;
 	}
 
-	if(SDL_RenderCopyEx(renderer, texture, section, &rect, angle, p, SDL_FLIP_NONE) != 0)
+	if(SDL_RenderCopyEx(renderer, texture, section, &r1, angle, p, SDL_FLIP_NONE) != 0)
 	{
 		LOG("Cannot blit to screen. SDL_RenderCopy error: %s", SDL_GetError());
 		ret = false;
@@ -167,7 +167,7 @@ bool Render::DrawTexture(SDL_Texture* texture, int x, int y, const SDL_Rect* sec
 	return ret;
 }
 
-bool Render::DrawRectangle(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool filled, bool use_camera) const
+bool Render::DrawRectangle(const SDL_Rect& r1, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool filled, bool use_camera) const
 {
 	bool ret = true;
 	uint scale = app->win->GetScale();
@@ -175,11 +175,11 @@ bool Render::DrawRectangle(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uint
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
-	SDL_Rect rec(rect);
+	SDL_Rect rec(r1);
 	if(use_camera)
 	{
-		rec.x = (int)(camera.x + rect.x * scale);
-		rec.y = (int)(camera.y + rect.y * scale);
+		rec.x = (int)(camera.x + r1.x * scale);
+		rec.y = (int)(camera.y + r1.y * scale);
 		rec.w *= scale;
 		rec.h *= scale;
 	}

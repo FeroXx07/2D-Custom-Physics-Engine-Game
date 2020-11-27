@@ -142,16 +142,16 @@ TileSet* Map::GetTilesetFromTileId(int id) const
 // Get relative Tile rectangle
 SDL_Rect TileSet::GetTileRect(int id) const
 {
-	SDL_Rect rect = { 0 };
+	SDL_Rect r1 = { 0 };
 
 	// L04: DONE 7: Get relative Tile rectangle
 	int relativeId = id - firstgid;
-	rect.w = tileWidth;
-	rect.h = tileHeight;
-	rect.x = margin + ((rect.w + spacing) * (relativeId % numTilesWidth));
-	rect.y = margin + ((rect.h + spacing) * (relativeId / numTilesWidth));
+	r1.w = tileWidth;
+	r1.h = tileHeight;
+	r1.x = margin + ((r1.w + spacing) * (relativeId % numTilesWidth));
+	r1.y = margin + ((r1.h + spacing) * (relativeId / numTilesWidth));
 	
-	return rect;
+	return r1;
 }
 
 // Called before quitting

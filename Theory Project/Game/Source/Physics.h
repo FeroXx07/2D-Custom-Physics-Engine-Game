@@ -37,12 +37,13 @@ public:
 
 	Body():bodyType(BodyType::NONE),texture(NULL),collider(NULL){} // Default constructor
 
-	Body(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture * texture_ = NULL, Collider * collider_ = NULL) // Constructor with body type and collider type
+	Body(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture * texture_ = NULL, Collider * collider_ = NULL, uint mass_ = 1) // Constructor with body type and collider type
 	{
 		bodyType = bodyType_;
 		colliderType = colliderType_;
 		texture = texture_;
 		collider = collider_;
+		mass = mass_;
 	}
 
 public:
@@ -52,21 +53,28 @@ public:
 	BodyType bodyType;
 	ColliderType colliderType;
 
-	iPoint position;
+	fPoint position;
 	fPoint rotation;
-
+	uint mass;
 };
 
 class StaticBody : public Body
 {
 public:
 	StaticBody() :Body(BodyType::STATIC_BODY) {}
+	StaticBody(ColliderType colliderType_ ,SDL_Texture* texture_, Collider* collider_, uint mass_) :Body(BodyType::STATIC_BODY, colliderType_, texture_, collider_, mass_) {}
 };
 
 class DynamicBody : public Body
 {
 public:
 	DynamicBody() :Body(BodyType::DYNAMIC_BODY) {}
+	DynamicBody(fPoint velocity_, fPoint gravity_, fPoint acceleration_, ColliderType colliderType_, SDL_Texture* texture_, Collider* collider_, uint mass_) :Body(BodyType::DYNAMIC_BODY, colliderType_, texture_, collider_, mass_)
+	{
+		velocity = velocity_;
+		gravity = gravity_;
+		acceleration = acceleration_;
+	}
 
 public:
 	fPoint velocity;
@@ -75,7 +83,8 @@ public:
 
 public:
 	void ChangeGravity();
-	void ApplyForce();
+	void ApplyForce(iPoint Newtons);
+	void ApplyForce(int NewtonsX, int NewtonsY = 0);
 	void ApplyTorque();
 	void Rotate();
 	//...
@@ -105,11 +114,12 @@ public:
 	List<Body*> bodyList;
 	
 public:
-	Body* CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL);
-	void Step();
+	Body* CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL, fPoint velocity_ = { 0.0f,0.0f }, fPoint gravity_ = { 0.0f,0.0f }, fPoint acceleration_ = { 0.0f,0.0f }, uint mass_ = 1);
+	void Step(float dt);
 
 	//... Apply forces/impulses functions for example
 	void Integrate(DynamicBody*item,float dt);
+	void Draw(Body* body_);
 	//... Getters functions for example
 private:
 	// Debug 
