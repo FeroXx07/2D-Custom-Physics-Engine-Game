@@ -87,7 +87,7 @@ void Physics::Integrate(DynamicBody* item, float dt)
 	item->velocity.y += item->acceleration.y * dt;
 }
 
-Body* CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL)
+Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL)
 {
 	if (bodyType_ == STATIC_BODY)
 	{
