@@ -89,7 +89,7 @@ void Physics::Integrate(DynamicBody* item, float dt)
 
 Body* CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL)
 {
-	Body* thisBody = new Body(bodyType_, colliderType_ = ColliderType::UNDEFINED, texture_ = NULL, collider_ = NULL);
+	Body* newBody = new Body(bodyType_, colliderType_, texture_, collider_);
 
-	return thisBody;
+	return newBody;
 }
