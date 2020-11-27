@@ -45,8 +45,6 @@ public:
 		collider = collider_;
 	}
 
-	// App->physics->CreateBody(......).-> Will call the constructor and save it's pointer in dynamic memory (PhysBody)
-
 public:
 	Collider* collider;
 	SDL_Texture* texture;
