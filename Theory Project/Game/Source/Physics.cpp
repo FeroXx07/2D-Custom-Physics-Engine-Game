@@ -84,7 +84,9 @@ void Physics::DebugDraw()
 void Physics::Integrate(DynamicBody* item, float dt)
 {
 	// Sum of all acceleration in both axis
-	float sumAccelerationY = (item->acceleration.y + item->gravity.y) * item->mass;
+	// sum of all forces
+	// second law newton (divide by mass) and gett total acceleration
+	float sumAccelerationY = (item->acceleration.y + item->gravity.y);
 
 
 	item->position.x += item->velocity.x * dt + 0.5f * item->acceleration.x * dt * dt;
@@ -139,13 +141,13 @@ Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , SDL_T
 void DynamicBody::ApplyForce(iPoint newtons)
 {
 	// F = ma
-	this->acceleration.x = newtons.x / this->mass;
-	this->acceleration.y = newtons.y / this->mass;
+	this->acceleration.x += newtons.x / this->mass;
+	this->acceleration.y += newtons.y / this->mass;
 }
 
 void DynamicBody::ApplyForce(int newtonsX, int newtonsY)
 {
 	// F = ma
-	this->acceleration.x = newtonsX / this->mass;
-	this->acceleration.y = newtonsY / this->mass;
+	this->acceleration.x += newtonsX / this->mass;
+	this->acceleration.y += newtonsY / this->mass;
 }
