@@ -7,6 +7,7 @@
 #include "Log.h"
 #include "Point.h"
 #include "Collider.h"
+#include "DynArray.h"
 
 #define PIXELS_PER_METER 50.0f // if touched change METER_PER_PIXEL too
 #define METER_PER_PIXEL 0.02f // this is 1 / PIXELS_PER_METER !
@@ -72,21 +73,25 @@ public:
 	DynamicBody(fPoint velocity_, fPoint gravity_, fPoint acceleration_, ColliderType colliderType_, SDL_Texture* texture_, Collider* collider_, uint mass_) :Body(BodyType::DYNAMIC_BODY, colliderType_, texture_, collider_, mass_)
 	{
 		velocity = velocity_;
-		gravity = gravity_;
+		gravityAcceleration = gravity_;
 		acceleration = acceleration_;
 	}
 
 public:
 	fPoint velocity;
-	fPoint gravity;
+	fPoint gravityAcceleration;
 	fPoint acceleration;
+	fPoint sumForces = {0.0f, 0.0f};
+	DynArray<fPoint> forces;
 
 public:
 	void ChangeGravity();
-	void ApplyForce(iPoint Newtons);
+	void ApplyForce(fPoint Newtons);
 	void ApplyForce(int NewtonsX, int NewtonsY = 0);
 	void ApplyTorque();
 	void Rotate();
+	void SumTotalForces();
+	void SecondNewton();
 	//...
 };
 
@@ -120,11 +125,12 @@ public:
 	//... Apply forces/impulses functions for example
 	void Integrate(DynamicBody*item,float dt);
 	void Draw(Body* body_);
+	void ChangeGravityAcceleration(fPoint acceleration);
 	//... Getters functions for example
 private:
 	// Debug 
 	void DebugDraw();
-	bool debug = false;
+	bool debug = true;
 };
 
 

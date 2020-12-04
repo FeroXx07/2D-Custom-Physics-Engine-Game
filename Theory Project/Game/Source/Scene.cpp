@@ -53,6 +53,8 @@ bool Scene::Start()
 // Called each loop iteration
 bool Scene::PreUpdate()
 {
+	app->physics->ChangeGravityAcceleration({0.0f, 800.0f});
+
 	return true;
 }
 
@@ -108,4 +110,4 @@ bool Scene::CleanUp()
 	LOG("Freeing scene");
 
 	return true;
-}
+} 

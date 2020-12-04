@@ -86,14 +86,12 @@ void Physics::Integrate(DynamicBody* item, float dt)
 	// Sum of all acceleration in both axis
 	// sum of all forces
 	// second law newton (divide by mass) and gett total acceleration
-	float sumAccelerationY = (item->acceleration.y + item->gravity.y);
-
 
 	item->position.x += item->velocity.x * dt + 0.5f * item->acceleration.x * dt * dt;
 	item->velocity.x += item->acceleration.x * dt;
 
-	item->position.y += item->velocity.y * dt + 0.5f * sumAccelerationY * dt * dt;
-	item->velocity.y += sumAccelerationY * dt;
+	item->position.y += item->velocity.y * dt + 0.5f * item->acceleration.y * dt * dt;
+	item->velocity.y += item->acceleration.y * dt;
 }
 
 void Physics::Step(float dt)
@@ -103,10 +101,16 @@ void Physics::Step(float dt)
 
 	for (list = bodyList.start; list != NULL; list = list->next)
 	{
+		
 		// Integrate
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
-			Integrate((DynamicBody*)list->data, dt);
+			DynamicBody* currentBody = (DynamicBody*)list->data;
+			currentBody->SecondNewton();
+
+			currentBody->acceleration += currentBody->gravityAcceleration;
+
+			Integrate(currentBody, dt);
 			list->data->collider->SetPos(list->data->position.x, list->data->position.y);
 		}
 	}
@@ -119,6 +123,21 @@ void Physics::Draw(Body* body)
 	if (body->collider != NULL)
 	{
 		app->render->DrawRectangle(body->collider->r1, 0, 100, 0);
+	}
+}
+
+void Physics::ChangeGravityAcceleration(fPoint acceleration)
+{
+	ListItem<Body*>* list;
+
+	for (list = bodyList.start; list != NULL; list = list->next)
+	{
+		// Integrate
+		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+		{
+			DynamicBody* temp = (DynamicBody*)list->data;
+			temp->gravityAcceleration = acceleration;
+		}
 	}
 }
 
@@ -138,16 +157,24 @@ Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , SDL_T
 	}
 }
 
-void DynamicBody::ApplyForce(iPoint newtons)
+void DynamicBody::ApplyForce(fPoint Newtons)
 {
-	// F = ma
-	this->acceleration.x += newtons.x / this->mass;
-	this->acceleration.y += newtons.y / this->mass;
+	forces.PushBack(Newtons);
 }
 
-void DynamicBody::ApplyForce(int newtonsX, int newtonsY)
+void DynamicBody::ApplyForce(int NewtonsX, int NewtonsY)
 {
-	// F = ma
-	this->acceleration.x += newtonsX / this->mass;
-	this->acceleration.y += newtonsY / this->mass;
+	forces.PushBack({float(NewtonsX), float(NewtonsY)});
+}
+
+void DynamicBody::SecondNewton()
+{
+	for (int i = 0; i < forces.Count(); i++)
+	{
+		sumForces += *forces.At(i);
+		forces.Pop(*forces.At(i));
+	}
+
+	acceleration.x = sumForces.x / mass;
+	acceleration.y = sumForces.y / mass;
 }
