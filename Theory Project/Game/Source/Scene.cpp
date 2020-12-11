@@ -11,6 +11,11 @@
 #include "Log.h"
 #include "Physics.h"
 
+#define PIXELS_PER_METER 50.0f // if touched change METER_PER_PIXEL too
+#define METER_PER_PIXEL 0.02f // this is 1 / PIXELS_PER_METER !
+
+#define METERS_TO_PIXELS(m) ((int) floor(PIXELS_PER_METER * m))
+#define PIXEL_TO_METERS(p)  ((float) METER_PER_PIXEL * p)
 
 Scene::Scene() : Module()
 {
@@ -39,13 +44,13 @@ bool Scene::Start()
 	// Load music
 	app->audio->PlayMusic("Assets/audio/music/music_spy.ogg");
 	
-	Collider* my = new Collider({ 0,0,100,100 });
-	Body*myBody = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my, { 0.0f,0.0f }, { 0.0f,5.0f });
-	myBody->position = { 100.0f,100.f };
+	/*Collider* my = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(1000) });
+	Body*myBody = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my, { 0.0f,0.0f }, { 0.0f,0.0f });
+	myBody->position = { PIXEL_TO_METERS(1000.0f),PIXEL_TO_METERS(1000.0f) };*/
 
-	Collider* my2 = new Collider({ 0,0,100,100 });
-	Body* myBody2 = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my2, { 0.0f,0.0f }, { 0.0f,5.0f });
-	myBody2->position = { 600.0f,100.f };
+	Collider* my2 = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(1000) });
+	Body* myBody2 = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my2, { 0.0f,0.0f }, { 0.0f,0.0f });
+	myBody2->position = { PIXEL_TO_METERS(6000.0f),PIXEL_TO_METERS(1000.0f) };
 	myBody2->mass = 10;
 	return true;
 }
@@ -53,7 +58,7 @@ bool Scene::Start()
 // Called each loop iteration
 bool Scene::PreUpdate()
 {
-	app->physics->ChangeGravityAcceleration({0.0f, 800.0f});
+	app->physics->ChangeGravityAcceleration({0.0f, 150.0f});
 
 	return true;
 }
@@ -81,6 +86,88 @@ bool Scene::Update(float dt)
 	if(app->input->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
 		app->render->camera.x += ceil(200.0f * dt);
 
+	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT)
+	{
+		ListItem<Body*>* list;
+		for (list = app->physics->bodyList.start; list != NULL; list = list->next)
+		{
+			// Apply forces to all dynamic bodies
+			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+			{
+				DynamicBody* currentBody = (DynamicBody*)list->data;
+				currentBody->ApplyForce(0, -2000);
+			}
+		}
+	}
+
+	if (app->input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
+	{
+		ListItem<Body*>* list;
+		for (list = app->physics->bodyList.start; list != NULL; list = list->next)
+		{
+			// Apply forces to all dynamic bodies
+			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+			{
+				DynamicBody* currentBody = (DynamicBody*)list->data;
+				currentBody->ApplyForce(200, 0);
+			}
+		}
+	}
+
+
+	if (app->input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
+	{
+		ListItem<Body*>* list;
+		for (list = app->physics->bodyList.start; list != NULL; list = list->next)
+		{
+			// Apply forces to all dynamic bodies
+			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+			{
+				DynamicBody* currentBody = (DynamicBody*)list->data;
+				currentBody->ApplyForce(-200, 0);
+			}
+		}
+	}
+
+	/*---------------------------------------------HARDCODED---------------------------------------------*/
+	ListItem<Body*>* list;
+	for (list = app->physics->bodyList.start; list != NULL; list = list->next)
+	{
+		// Apply forces to all dynamic bodies
+		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+		{
+			DynamicBody* currentBody = (DynamicBody*)list->data;
+			if (currentBody->position.y >= 720 - currentBody->collider->r1.h)
+			{
+				currentBody->position.y = 720 - currentBody->collider->r1.h;
+				currentBody->velocity.y = -currentBody->velocity.y * 0.7;
+			}
+
+			if (currentBody->position.y <= 0 )
+			{
+				currentBody->position.y = 0;
+				currentBody->velocity.y = -currentBody->velocity.y * 0.7;
+			}
+
+			if (currentBody->position.x <= 0)
+			{
+				currentBody->position.x = 0;
+				currentBody->velocity.x = -currentBody->velocity.x * 0.2;
+			}
+
+			uint width, height;
+			app->win->GetWindowSize(width, height);
+			if (currentBody->position.x >=  width - currentBody->collider->r1.w)
+			{
+				currentBody->position.x = width - currentBody->collider->r1.w;
+				currentBody->velocity.x = -currentBody->velocity.x * 0.2;
+			}
+
+			if (fabs(currentBody->velocity.x) < 0.01f) // Stop the player once velocity is too small
+				currentBody->velocity.x = 0;
+		}
+		/*---------------------------------------------HARDCODED---------------------------------------------*/
+	}
 	// Draw map
 	// L03: DONE 7: Set the window title with map/tileset info
 	/*SString title("Map:%dx%d Tiles:%dx%d Tilesets:%d",

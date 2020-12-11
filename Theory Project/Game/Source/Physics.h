@@ -95,6 +95,18 @@ public:
 	//...
 };
 
+//class Collision 
+//{
+//public:
+//
+//	Collision() {};
+//	~Collision() {};
+//
+//
+//	bool OnCollision(Collider* rectA, Collider* rectB);
+//	void DeClipper(Body* bodyToClipp, Body* bodyReference = NULL);
+//};
+
 // ------------------------------------------------------------------------------------------------------------------------------
 
 class Physics : public Module
@@ -117,7 +129,7 @@ public:
 
 public:
 	List<Body*> bodyList;
-	
+	//Collision collisions;
 public:
 	Body* CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL, fPoint velocity_ = { 0.0f,0.0f }, fPoint gravity_ = { 0.0f,0.0f }, fPoint acceleration_ = { 0.0f,0.0f }, uint mass_ = 1);
 	void Step(float dt);
@@ -126,6 +138,8 @@ public:
 	void Integrate(DynamicBody*item,float dt);
 	void Draw(Body* body_);
 	void ChangeGravityAcceleration(fPoint acceleration);
+
+	void CheckCollisions();
 	//... Getters functions for example
 private:
 	// Debug 

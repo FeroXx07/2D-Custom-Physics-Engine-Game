@@ -111,6 +111,9 @@ void Physics::Step(float dt)
 			currentBody->acceleration += currentBody->gravityAcceleration;
 
 			Integrate(currentBody, dt);
+
+			currentBody->acceleration = { 0.0f,0.0f };
+
 			list->data->collider->SetPos(list->data->position.x, list->data->position.y);
 		}
 	}
@@ -122,7 +125,8 @@ void Physics::Draw(Body* body)
 {
 	if (body->collider != NULL)
 	{
-		app->render->DrawRectangle(body->collider->r1, 0, 100, 0);
+		app->render->DrawRectangle(body->collider->r1, 0, 100, 0); 
+		// TODO: CONVERT TO PIXELS
 	}
 }
 
@@ -137,6 +141,25 @@ void Physics::ChangeGravityAcceleration(fPoint acceleration)
 		{
 			DynamicBody* temp = (DynamicBody*)list->data;
 			temp->gravityAcceleration = acceleration;
+		}
+	}
+}
+
+void Physics::CheckCollisions()
+{
+	ListItem<Body*>* list;
+	ListItem<Body*>* list2;
+	for (list = bodyList.start; list != NULL; list = list->next)
+	{
+		for (list2 = bodyList.start; list2 != NULL; list2 = list2->next)
+		{
+			if (list->data != list2->data)
+			{
+				//if (collisions.OnCollision(list->data->collider, list2->data->collider)) // True if collided
+				//{
+
+				//}
+			}
 		}
 	}
 }
@@ -174,7 +197,16 @@ void DynamicBody::SecondNewton()
 		sumForces += *forces.At(i);
 		forces.Pop(*forces.At(i));
 	}
+	forces.Clear();
 
-	acceleration.x = sumForces.x / mass;
-	acceleration.y = sumForces.y / mass;
+	acceleration.x += sumForces.x / mass;
+	acceleration.y += sumForces.y / mass;
+
+	sumForces = { 0,0 };
 }
+
+//bool Collision::OnCollision(Collider* rectA, Collider* rectB)
+//{
+//	
+//	return false;
+//}
