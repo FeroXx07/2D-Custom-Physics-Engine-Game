@@ -8,6 +8,7 @@
 #include "Point.h"
 #include "Collider.h"
 #include "DynArray.h"
+#include "SString.h"
 
 #define PIXELS_PER_METER 50.0f // if touched change METER_PER_PIXEL too
 #define METER_PER_PIXEL 0.02f // this is 1 / PIXELS_PER_METER !
@@ -29,6 +30,8 @@ enum ColliderType
 	UNDEFINED = -1,
 	PLAYER,
 	ENEMY,
+	WALL,
+	GROUND,
 	//Win...
 };
 
@@ -40,6 +43,7 @@ public:
 
 	Body(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture * texture_ = NULL, Collider * collider_ = NULL, uint mass_ = 1) // Constructor with body type and collider type
 	{
+		name = "noname";
 		bodyType = bodyType_;
 		colliderType = colliderType_;
 		texture = texture_;
@@ -47,7 +51,20 @@ public:
 		mass = mass_;
 	}
 
+	Body(BodyType bodyType_, SString name_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL, uint mass_ = 1) // Constructor with body type and collider type
+	{
+		name = name_;
+		bodyType = bodyType_;
+		colliderType = colliderType_;
+		texture = texture_;
+		collider = collider_;
+		mass = mass_;
+	}
+
+	void OnCollision(Body &body);
+	void DeClipper(Body &body);
 public:
+	SString name;
 	Collider* collider;
 	SDL_Texture* texture;
 	
@@ -95,18 +112,6 @@ public:
 	//...
 };
 
-//class Collision 
-//{
-//public:
-//
-//	Collision() {};
-//	~Collision() {};
-//
-//
-//	bool OnCollision(Collider* rectA, Collider* rectB);
-//	void DeClipper(Body* bodyToClipp, Body* bodyReference = NULL);
-//};
-
 // ------------------------------------------------------------------------------------------------------------------------------
 
 class Physics : public Module
@@ -129,7 +134,6 @@ public:
 
 public:
 	List<Body*> bodyList;
-	//Collision collisions;
 public:
 	Body* CreateBody(BodyType bodyType_, ColliderType colliderType_ = ColliderType::UNDEFINED, SDL_Texture* texture_ = NULL, Collider* collider_ = NULL, fPoint velocity_ = { 0.0f,0.0f }, fPoint gravity_ = { 0.0f,0.0f }, fPoint acceleration_ = { 0.0f,0.0f }, uint mass_ = 1);
 	void Step(float dt);

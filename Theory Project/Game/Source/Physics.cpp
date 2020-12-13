@@ -101,7 +101,6 @@ void Physics::Step(float dt)
 
 	for (list = bodyList.start; list != NULL; list = list->next)
 	{
-		
 		// Integrate
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
@@ -113,9 +112,11 @@ void Physics::Step(float dt)
 			Integrate(currentBody, dt);
 
 			currentBody->acceleration = { 0.0f,0.0f };
-
-			list->data->collider->SetPos(list->data->position.x, list->data->position.y);
 		}
+		list->data->collider->SetPos((int)list->data->position.x, (int)list->data->position.y);
+
+		// Check Colls
+		CheckCollisions();
 	}
 
 	//Set collider correctly
@@ -125,7 +126,21 @@ void Physics::Draw(Body* body)
 {
 	if (body->collider != NULL)
 	{
-		app->render->DrawRectangle(body->collider->r1, 0, 100, 0); 
+		switch (body->colliderType)
+		{
+		case PLAYER:
+			app->render->DrawRectangle(body->collider->r1, 0, 100, 0); // Green
+			break;
+		case GROUND:
+			app->render->DrawRectangle(body->collider->r1, 0, 191, 255); // Sky blue
+			break;
+		case WALL:
+			app->render->DrawRectangle(body->collider->r1, 123, 104, 238); // Mediumslateblue
+			break;
+		default:
+			break;
+		}
+		//app->render->DrawRectangle({METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h)}, 0, 100, 0);
 		// TODO: CONVERT TO PIXELS
 	}
 }
@@ -147,18 +162,19 @@ void Physics::ChangeGravityAcceleration(fPoint acceleration)
 
 void Physics::CheckCollisions()
 {
-	ListItem<Body*>* list;
-	ListItem<Body*>* list2;
-	for (list = bodyList.start; list != NULL; list = list->next)
+	ListItem<Body*>* bodyList1;
+	ListItem<Body*>* bodyList2;
+	for (bodyList1 = bodyList.start; bodyList1 != NULL; bodyList1 = bodyList1->next)
 	{
-		for (list2 = bodyList.start; list2 != NULL; list2 = list2->next)
+		for (bodyList2 = bodyList.start; bodyList2 != NULL; bodyList2 = bodyList2->next)
 		{
-			if (list->data != list2->data)
+			if (bodyList1->data != bodyList2->data)
 			{
-				//if (collisions.OnCollision(list->data->collider, list2->data->collider)) // True if collided
-				//{
-
-				//}
+				if ((bodyList1->data->collider->CheckCollision(bodyList1->data->collider->r1, bodyList2->data->collider->r1))) // True if collided
+				{
+					bodyList1->data->OnCollision(*bodyList2->data);
+					bodyList2->data->OnCollision(*bodyList1->data);
+				}
 			}
 		}
 	}
@@ -205,8 +221,43 @@ void DynamicBody::SecondNewton()
 	sumForces = { 0,0 };
 }
 
-//bool Collision::OnCollision(Collider* rectA, Collider* rectB)
-//{
-//	
-//	return false;
-//}
+void Body::OnCollision(Body &body)
+{
+	this->DeClipper(body); // First declipp then do anything 
+}
+
+void Body::DeClipper(Body &body)
+{
+	if (this->bodyType == DYNAMIC_BODY)
+	{
+		DynamicBody* currentBody = (DynamicBody*)this;
+
+		
+		if (currentBody->position.y + currentBody->collider->r1.h >= body.position.y && !(currentBody->position.y >= body.position.y) && (currentBody->position.y + currentBody->collider->r1.h <= body.position.y + body.collider->r1.h))
+		{
+			// Ground
+			currentBody->position.y = body.collider->r1.y - currentBody->collider->r1.h - 1;
+			currentBody->velocity.y = -currentBody->velocity.y;
+		}
+		else if ((currentBody->position.y <= body.position.y + body.collider->r1.h) && currentBody->position.y >= body.position.y && !(currentBody->position.y + currentBody->collider->r1.h <= body.position.y + body.collider->r1.h))
+		{
+			// Top
+			currentBody->position.y = body.collider->r1.y + body.collider->r1.h + 1;
+			currentBody->velocity.y = -currentBody->velocity.y;
+		}
+		else if ((currentBody->position.x <= body.position.x + body.collider->r1.w) && currentBody->position.x >= body.position.x && !(currentBody->position.x + currentBody->collider->r1.w <= body.position.x + body.collider->r1.w))
+		{
+			// Left wall
+			currentBody->position.x = body.collider->r1.x + body.collider->r1.w + 1;
+			currentBody->velocity.x = -currentBody->velocity.x;
+		}
+		else if ((currentBody->position.x + currentBody->collider->r1.h >= body.position.x) && !(currentBody->position.x >= body.position.x))
+		{
+			// Right wall
+			currentBody->position.x = body.collider->r1.x - currentBody->collider->r1.h - 1;
+			currentBody->velocity.x = -currentBody->velocity.x;
+		}
+
+		currentBody->collider->SetPos((int)currentBody->position.x, (int)currentBody->position.y);
+	}
+}

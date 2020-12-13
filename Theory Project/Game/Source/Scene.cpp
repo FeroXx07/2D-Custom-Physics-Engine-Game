@@ -17,6 +17,7 @@
 #define METERS_TO_PIXELS(m) ((int) floor(PIXELS_PER_METER * m))
 #define PIXEL_TO_METERS(p)  ((float) METER_PER_PIXEL * p)
 
+#define FORCE 2000
 Scene::Scene() : Module()
 {
 	name.Create("scene");
@@ -42,7 +43,7 @@ bool Scene::Start()
 	//app->map->Load("hello2.tmx");
 	
 	// Load music
-	app->audio->PlayMusic("Assets/audio/music/music_spy.ogg");
+	//app->audio->PlayMusic("Assets/audio/music/music_spy.ogg");
 	
 	/*Collider* my = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(1000) });
 	Body*myBody = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my, { 0.0f,0.0f }, { 0.0f,0.0f });
@@ -52,13 +53,35 @@ bool Scene::Start()
 	Body* myBody2 = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my2, { 0.0f,0.0f }, { 0.0f,0.0f });
 	myBody2->position = { PIXEL_TO_METERS(6000.0f),PIXEL_TO_METERS(1000.0f) };
 	myBody2->mass = 10;
+
+	Collider* groundColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(65000),(int)PIXEL_TO_METERS(1000) });
+	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	groundBody->position = { PIXEL_TO_METERS(0.0f),PIXEL_TO_METERS(30000.0f) };
+	groundBody->mass = 10;
+
+	Collider* roofColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(65000),(int)PIXEL_TO_METERS(1000) });
+	Body* roofBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, NULL, roofColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	roofBody->position = { PIXEL_TO_METERS(0.0f),PIXEL_TO_METERS(0.0f) };
+	roofBody->mass = 10;
+
+	Collider* leftWallColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(50000) });
+	Body* leftWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, NULL, leftWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	leftWallBody->position = { PIXEL_TO_METERS(0.0f),PIXEL_TO_METERS(0.0f) };
+	leftWallBody->mass = 10;
+
+	Collider* rightWallColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(50000) });
+	Body* rightWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, NULL, rightWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	rightWallBody->position = { PIXEL_TO_METERS(50000.0f),PIXEL_TO_METERS(0.0f) };
+	rightWallBody->mass = 10;
+
+
 	return true;
 }
 
 // Called each loop iteration
 bool Scene::PreUpdate()
 {
-	app->physics->ChangeGravityAcceleration({0.0f, 150.0f});
+	app->physics->ChangeGravityAcceleration({0.0f, 10.0f});
 
 	return true;
 }
@@ -95,7 +118,7 @@ bool Scene::Update(float dt)
 			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 			{
 				DynamicBody* currentBody = (DynamicBody*)list->data;
-				currentBody->ApplyForce(0, -2000);
+				currentBody->ApplyForce(0, -FORCE);
 			}
 		}
 	}
@@ -109,7 +132,7 @@ bool Scene::Update(float dt)
 			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 			{
 				DynamicBody* currentBody = (DynamicBody*)list->data;
-				currentBody->ApplyForce(200, 0);
+				currentBody->ApplyForce(FORCE, 0);
 			}
 		}
 	}
@@ -124,7 +147,21 @@ bool Scene::Update(float dt)
 			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 			{
 				DynamicBody* currentBody = (DynamicBody*)list->data;
-				currentBody->ApplyForce(-200, 0);
+				currentBody->ApplyForce(-FORCE, 0);
+			}
+		}
+	}
+
+	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
+	{
+		ListItem<Body*>* list;
+		for (list = app->physics->bodyList.start; list != NULL; list = list->next)
+		{
+			// Apply forces to all dynamic bodies
+			if (list->data->bodyType == BodyType::DYNAMIC_BODY)
+			{
+				DynamicBody* currentBody = (DynamicBody*)list->data;
+				currentBody->ApplyForce(0, FORCE);
 			}
 		}
 	}
@@ -137,7 +174,7 @@ bool Scene::Update(float dt)
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
 			DynamicBody* currentBody = (DynamicBody*)list->data;
-			if (currentBody->position.y >= 720 - currentBody->collider->r1.h)
+			/*if (currentBody->position.y >= 720 - currentBody->collider->r1.h)
 			{
 				currentBody->position.y = 720 - currentBody->collider->r1.h;
 				currentBody->velocity.y = -currentBody->velocity.y * 0.7;
@@ -157,11 +194,11 @@ bool Scene::Update(float dt)
 
 			uint width, height;
 			app->win->GetWindowSize(width, height);
-			if (currentBody->position.x >=  width - currentBody->collider->r1.w)
+			if (currentBody->position.x >= width - currentBody->collider->r1.w)
 			{
 				currentBody->position.x = width - currentBody->collider->r1.w;
 				currentBody->velocity.x = -currentBody->velocity.x * 0.2;
-			}
+			}*/
 
 			if (fabs(currentBody->velocity.x) < 0.01f) // Stop the player once velocity is too small
 				currentBody->velocity.x = 0;
