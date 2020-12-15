@@ -172,8 +172,8 @@ void Physics::CheckCollisions()
 			{
 				if ((bodyList1->data->collider->CheckCollision(bodyList1->data->collider->r1, bodyList2->data->collider->r1))) // True if collided
 				{
-					bodyList1->data->OnCollision(*bodyList2->data);
-					bodyList2->data->OnCollision(*bodyList1->data);
+					bodyList1->data->SolveCollision(*bodyList2->data);
+					bodyList2->data->SolveCollision(*bodyList1->data);
 				}
 			}
 		}
@@ -221,7 +221,7 @@ void DynamicBody::SecondNewton()
 	sumForces = { 0,0 };
 }
 
-void Body::OnCollision(Body &body)
+void Body::SolveCollision(Body &body)
 {
 	this->DeClipper(body); // First declipp then do anything 
 }
@@ -232,30 +232,31 @@ void Body::DeClipper(Body &body)
 	{
 		DynamicBody* currentBody = (DynamicBody*)this;
 
-		
 		if (currentBody->position.y + currentBody->collider->r1.h >= body.position.y && !(currentBody->position.y >= body.position.y) && (currentBody->position.y + currentBody->collider->r1.h <= body.position.y + body.collider->r1.h))
 		{
 			// Ground
 			currentBody->position.y = body.collider->r1.y - currentBody->collider->r1.h - 1;
-			currentBody->velocity.y = -currentBody->velocity.y;
+			currentBody->velocity.y = -currentBody->velocity.y * currentBody->coeficientRestitution.y;
 		}
 		else if ((currentBody->position.y <= body.position.y + body.collider->r1.h) && currentBody->position.y >= body.position.y && !(currentBody->position.y + currentBody->collider->r1.h <= body.position.y + body.collider->r1.h))
 		{
 			// Top
 			currentBody->position.y = body.collider->r1.y + body.collider->r1.h + 1;
-			currentBody->velocity.y = -currentBody->velocity.y;
+			//currentBody->velocity.y = -currentBody->velocity.y * currentBody->coeficientRestitution.y;
 		}
-		else if ((currentBody->position.x <= body.position.x + body.collider->r1.w) && currentBody->position.x >= body.position.x && !(currentBody->position.x + currentBody->collider->r1.w <= body.position.x + body.collider->r1.w))
+
+		if ((currentBody->position.x <= body.position.x + body.collider->r1.w) && currentBody->position.x >= body.position.x && !(currentBody->position.x + currentBody->collider->r1.w <= body.position.x + body.collider->r1.w))
 		{
 			// Left wall
 			currentBody->position.x = body.collider->r1.x + body.collider->r1.w + 1;
-			currentBody->velocity.x = -currentBody->velocity.x;
+			currentBody->velocity.x = -currentBody->velocity.x * currentBody->coeficientRestitution.x;
+
 		}
 		else if ((currentBody->position.x + currentBody->collider->r1.h >= body.position.x) && !(currentBody->position.x >= body.position.x))
 		{
 			// Right wall
 			currentBody->position.x = body.collider->r1.x - currentBody->collider->r1.h - 1;
-			currentBody->velocity.x = -currentBody->velocity.x;
+			currentBody->velocity.x = -currentBody->velocity.x * currentBody->coeficientRestitution.x;
 		}
 
 		currentBody->collider->SetPos((int)currentBody->position.x, (int)currentBody->position.y);

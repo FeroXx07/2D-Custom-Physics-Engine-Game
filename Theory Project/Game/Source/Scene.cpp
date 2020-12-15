@@ -49,10 +49,11 @@ bool Scene::Start()
 	Body*myBody = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my, { 0.0f,0.0f }, { 0.0f,0.0f });
 	myBody->position = { PIXEL_TO_METERS(1000.0f),PIXEL_TO_METERS(1000.0f) };*/
 
-	Collider* my2 = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(1000) });
-	Body* myBody2 = app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, my2, { 0.0f,0.0f }, { 0.0f,0.0f });
-	myBody2->position = { PIXEL_TO_METERS(6000.0f),PIXEL_TO_METERS(1000.0f) };
-	myBody2->mass = 10;
+	Collider* theSquareColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(1000) });
+	DynamicBody* theSquareBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	theSquareBody->position = { PIXEL_TO_METERS(6000.0f),PIXEL_TO_METERS(1000.0f) };
+	theSquareBody->mass = 10;
+	theSquareBody->coeficientRestitution = { 1.0f,0.8f };
 
 	Collider* groundColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(65000),(int)PIXEL_TO_METERS(1000) });
 	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
@@ -74,7 +75,27 @@ bool Scene::Start()
 	rightWallBody->position = { PIXEL_TO_METERS(50000.0f),PIXEL_TO_METERS(0.0f) };
 	rightWallBody->mass = 10;
 
+	Collider* middleBoxColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(5000),(int)PIXEL_TO_METERS(5000) });
+	Body* middleBoxBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, NULL, middleBoxColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	middleBoxBody->position = { PIXEL_TO_METERS(25000.0f),PIXEL_TO_METERS(15000.0f) };
+	middleBoxBody->mass = 10;
 
+
+	/*Collider* theSquareColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(100),(int)PIXEL_TO_METERS(100) });
+	DynamicBody* theSquareBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	theSquareBody->position = { PIXEL_TO_METERS(600.0f),PIXEL_TO_METERS(60.0f) };
+	theSquareBody->mass = 10;
+	theSquareBody->coeficientRestitution = { 1.0f,0.8f };
+
+	Collider* groundColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(1280),(int)PIXEL_TO_METERS(100) });
+	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	groundBody->position = { PIXEL_TO_METERS(0.0f),PIXEL_TO_METERS(600.0f) };
+	groundBody->mass = 10;
+
+	Collider* roofColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(1280),(int)PIXEL_TO_METERS(100) });
+	Body* roofBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, NULL, roofColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	roofBody->position = { PIXEL_TO_METERS(0.0f),PIXEL_TO_METERS(0.0f) };
+	roofBody->mass = 10;*/
 	return true;
 }
 

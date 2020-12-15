@@ -61,10 +61,11 @@ public:
 		mass = mass_;
 	}
 
-	void OnCollision(Body &body);
+	void SolveCollision(Body &body);
 	void DeClipper(Body &body);
 public:
 	SString name;
+	// TODO: Add collider as argument (SDL_Rectangl) that in the constructor creates a "new Collider(); and assign it to collider atribute"
 	Collider* collider;
 	SDL_Texture* texture;
 	
@@ -99,6 +100,7 @@ public:
 	fPoint gravityAcceleration;
 	fPoint acceleration;
 	fPoint sumForces = {0.0f, 0.0f};
+	fPoint coeficientRestitution = { 1.0f,1.0f };
 	DynArray<fPoint> forces;
 
 public:
@@ -109,6 +111,8 @@ public:
 	void Rotate();
 	void SumTotalForces();
 	void SecondNewton();
+public:
+	bool onGround, onTop, onWall;
 	//...
 };
 
