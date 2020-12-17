@@ -2,8 +2,10 @@
 #define __SCENE_H__
 
 #include "Module.h"
+#include "Physics.h"
 
 struct SDL_Texture;
+
 
 class Scene : public Module
 {
@@ -34,6 +36,7 @@ public:
 
 private:
 	SDL_Texture* img;
+	DynamicBody* theSquareBody;
 };
 
 #endif // __SCENE_H__

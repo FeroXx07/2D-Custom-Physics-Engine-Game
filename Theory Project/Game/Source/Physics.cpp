@@ -105,6 +105,10 @@ void Physics::Step(float dt)
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
 			DynamicBody* currentBody = (DynamicBody*)list->data;
+
+			//currentBody->ApplyAeroDrag();
+			//currentBody->ApplyAeroLift();
+
 			currentBody->SecondNewton();
 
 			currentBody->acceleration += currentBody->gravityAcceleration;
@@ -218,7 +222,45 @@ void DynamicBody::SecondNewton()
 	acceleration.x += sumForces.x / mass;
 	acceleration.y += sumForces.y / mass;
 
-	sumForces = { 0,0 };
+	sumForces = { 0.0f,0.0f };
+}
+
+void DynamicBody::ApplyAeroDrag()
+{
+	if (dragAeroActive)
+	{
+		iPoint direction;
+
+		if (velocity.x > 0)
+			direction.x = -1;
+		else if (velocity.x < 0 )
+			direction.x = 1;
+
+		if (velocity.y > 0)
+			direction.y = -1;
+		else if (velocity.y < 0)
+			direction.y = 1;
+
+		fPoint dragForce;
+		dragForce.x = 0.5f * mass * velocity.x * velocity.x * coeficientAeroDrag.x * direction.x;
+		dragForce.y = 0.5f * mass * velocity.y * velocity.y * coeficientAeroDrag.y * direction.y;
+
+		if (dragForce.y <= -40.0f)
+		{
+			LOG("BIG");
+		}
+
+		forces.PushBack(dragForce);
+	}
+}
+
+void DynamicBody::ApplyAeroLift()
+{
+	fPoint liftForce;
+	liftForce.x = 0.0f;
+	liftForce.y = -0.5f * mass * velocity.y * velocity.y * coeficientAeroLift;
+
+	forces.PushBack(liftForce);
 }
 
 void Body::SolveCollision(Body &body)
@@ -242,7 +284,7 @@ void Body::DeClipper(Body &body)
 		{
 			// Top
 			currentBody->position.y = body.collider->r1.y + body.collider->r1.h + 1;
-			//currentBody->velocity.y = -currentBody->velocity.y * currentBody->coeficientRestitution.y;
+			currentBody->velocity.y = -currentBody->velocity.y * currentBody->coeficientRestitution.y;
 		}
 
 		if ((currentBody->position.x <= body.position.x + body.collider->r1.w) && currentBody->position.x >= body.position.x && !(currentBody->position.x + currentBody->collider->r1.w <= body.position.x + body.collider->r1.w))

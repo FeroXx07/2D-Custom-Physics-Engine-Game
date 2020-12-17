@@ -9,7 +9,6 @@
 
 #include "Defs.h"
 #include "Log.h"
-#include "Physics.h"
 
 #define PIXELS_PER_METER 50.0f // if touched change METER_PER_PIXEL too
 #define METER_PER_PIXEL 0.02f // this is 1 / PIXELS_PER_METER !
@@ -50,10 +49,12 @@ bool Scene::Start()
 	myBody->position = { PIXEL_TO_METERS(1000.0f),PIXEL_TO_METERS(1000.0f) };*/
 
 	Collider* theSquareColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(1000),(int)PIXEL_TO_METERS(1000) });
-	DynamicBody* theSquareBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	theSquareBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });
 	theSquareBody->position = { PIXEL_TO_METERS(6000.0f),PIXEL_TO_METERS(1000.0f) };
 	theSquareBody->mass = 10;
 	theSquareBody->coeficientRestitution = { 1.0f,0.8f };
+	theSquareBody->coeficientAeroDrag = { 0.01f, 0.01f };
+	theSquareBody->coeficientAeroLift = 0.5f;
 
 	Collider* groundColl = new Collider({ 0,0,(int)PIXEL_TO_METERS(65000),(int)PIXEL_TO_METERS(1000) });
 	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
@@ -235,6 +236,8 @@ bool Scene::Update(float dt)
 
 	//app->win->SetTitle(title.GetString());
 
+	//LOG("POSITION = %f , %f", theSquareBody->position.x, theSquareBody->position.y);
+	LOG("VELOCITY = %f , %f", theSquareBody->velocity.x, theSquareBody->velocity.y);
 	return true;
 }
 

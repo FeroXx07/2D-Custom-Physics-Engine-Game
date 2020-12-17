@@ -73,7 +73,7 @@ public:
 	ColliderType colliderType;
 
 	fPoint position;
-	fPoint rotation;
+	float rotation; 
 	uint mass;
 };
 
@@ -101,6 +101,8 @@ public:
 	fPoint acceleration;
 	fPoint sumForces = {0.0f, 0.0f};
 	fPoint coeficientRestitution = { 1.0f,1.0f };
+	fPoint coeficientAeroDrag = { 0.0f,0.0f };
+	float coeficientAeroLift = 0.0f;
 	DynArray<fPoint> forces;
 
 public:
@@ -109,10 +111,13 @@ public:
 	void ApplyForce(int NewtonsX, int NewtonsY = 0);
 	void ApplyTorque();
 	void Rotate();
-	void SumTotalForces();
 	void SecondNewton();
+	void ApplyAeroDrag();
+	void ApplyAeroLift();
 public:
 	bool onGround, onTop, onWall;
+	bool dragAeroActive = true;
+	bool liftAeroActive = true;
 	//...
 };
 
@@ -153,6 +158,21 @@ private:
 	// Debug 
 	void DebugDraw();
 	bool debug = true;
+
+	// TODO:
+	/*
+	* -Circular colliders
+	* -Circuler collisions with rects and circles
+	* -Torque? Or rotation as function of input?
+	* 
+	* // ---------------- GAME ------------------
+	* -- Player Ship
+	* -- WASD movement QE rotation SPACE thrust
+	* 
+	* --Planet struct without orbit
+	* --Hereby struct (Planet with orbit)
+	* --Void struct
+	*/
 };
 
 
