@@ -3,9 +3,21 @@
 
 #include "Module.h"
 #include "Physics.h"
+#include "List.h"
 
 struct SDL_Texture;
 
+struct Planet
+{
+public:
+	Planet(CircleCollider& planet_, CircleCollider& orbit_) : planet(planet_), orbit(orbit_) 
+	{
+		orbit.x = planet.x;
+		orbit.y = planet.y;
+	}
+	CircleCollider planet;
+	CircleCollider orbit;
+};
 
 class Scene : public Module
 {
@@ -23,7 +35,7 @@ public:
 	bool Start();
 
 	// Called before all Updates
-	bool PreUpdate();
+	bool PreUpdate(float dt);
 
 	// Called each loop iteration
 	bool Update(float dt);
@@ -37,6 +49,14 @@ public:
 private:
 	SDL_Texture* img;
 	DynamicBody* theSquareBody;
+public:
+	List<Planet*> planets;
+	Planet* AddPlanet(CircleCollider& planet, CircleCollider& orbit)
+	{
+		Planet* p = new Planet(planet, orbit);
+		planets.add(p);
+		return p;
+	}
 };
 
 #endif // __SCENE_H__

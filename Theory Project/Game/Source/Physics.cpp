@@ -37,6 +37,10 @@ bool Physics::Start()
 
 bool Physics::Update(float dt)
 {
+	if (dt >= 1.0f / 30.0f)
+	{
+		dt = 1.0f / 30.0f;
+	}
 	Step(dt);
 
 	return true;
@@ -101,6 +105,7 @@ void Physics::Step(float dt)
 
 	for (list = bodyList.start; list != NULL; list = list->next)
 	{
+		list->data->rotation = list->data->ToPositiveAngle(list->data->rotation);
 		// Integrate
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
@@ -200,6 +205,11 @@ Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , SDL_T
 	}
 }
 
+void DynamicBody::SetGravityAcceleration(fPoint gravity)
+{
+	this->gravityAcceleration = gravity;
+}
+
 void DynamicBody::ApplyForce(fPoint Newtons)
 {
 	forces.PushBack(Newtons);
@@ -257,7 +267,14 @@ void DynamicBody::ApplyAeroDrag()
 void DynamicBody::ApplyAeroLift()
 {
 	fPoint liftForce;
-	liftForce.x = 0.0f;
+
+	float direction = 0;
+	if (velocity.x > 0)
+		direction = -1;
+	else if (velocity.x < 0)
+		direction  = 1;
+
+	liftForce.x = 0.5f * mass * velocity.y * velocity.y * coeficientAeroLift * direction;
 	liftForce.y = -0.5f * mass * velocity.y * velocity.y * coeficientAeroLift;
 
 	forces.PushBack(liftForce);
@@ -303,4 +320,14 @@ void Body::DeClipper(Body &body)
 
 		currentBody->collider->SetPos((int)currentBody->position.x, (int)currentBody->position.y);
 	}
+}
+
+double Body::ToPositiveAngle(double angle)
+{
+	angle = fmod(angle, 360);
+	while (angle < 0) { //pretty sure this comparison is valid for doubles and floats
+		angle += 360.0;
+	}
+
+	return angle;
 }

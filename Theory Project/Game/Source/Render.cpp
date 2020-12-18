@@ -62,7 +62,7 @@ bool Render::Start()
 }
 
 // Called each loop iteration
-bool Render::PreUpdate()
+bool Render::PreUpdate(float dt)
 {
 	SDL_RenderClear(renderer);
 	return true;

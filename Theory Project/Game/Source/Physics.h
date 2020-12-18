@@ -16,6 +16,9 @@
 #define METERS_TO_PIXELS(m) ((int) floor(PIXELS_PER_METER * m))
 #define PIXEL_TO_METERS(p)  ((float) METER_PER_PIXEL * p)
 
+#define DEGREES_TO_RADIANS(angleDegrees) ((angleDegrees) * M_PI / 180.0)
+#define RADIANS_TO_DEGREES(angleRadians) ((angleRadians) * 180.0 / M_PI)
+
 struct SDL_Texture;
 
 enum BodyType
@@ -63,6 +66,7 @@ public:
 
 	void SolveCollision(Body &body);
 	void DeClipper(Body &body);
+	double ToPositiveAngle(double angle);
 public:
 	SString name;
 	// TODO: Add collider as argument (SDL_Rectangl) that in the constructor creates a "new Collider(); and assign it to collider atribute"
@@ -106,7 +110,7 @@ public:
 	DynArray<fPoint> forces;
 
 public:
-	void ChangeGravity();
+	void SetGravityAcceleration(fPoint gravity);
 	void ApplyForce(fPoint Newtons);
 	void ApplyForce(int NewtonsX, int NewtonsY = 0);
 	void ApplyTorque();
@@ -114,10 +118,11 @@ public:
 	void SecondNewton();
 	void ApplyAeroDrag();
 	void ApplyAeroLift();
+
 public:
 	bool onGround, onTop, onWall;
 	bool dragAeroActive = true;
-	bool liftAeroActive = true;
+	bool liftAeroActive = false;
 	//...
 };
 
