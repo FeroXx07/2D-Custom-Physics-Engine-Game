@@ -100,29 +100,39 @@ void Physics::Integrate(DynamicBody* item, float dt)
 
 void Physics::Step(float dt)
 {
-	// Integrate
 	ListItem<Body*>* list;
 
 	for (list = bodyList.start; list != NULL; list = list->next)
 	{
+		// Correct angles rotation
 		list->data->rotation = list->data->ToPositiveAngle(list->data->rotation);
-		// Integrate
+
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
-			DynamicBody* currentBody = (DynamicBody*)list->data;
+			DynamicBody* dynamicBody = (DynamicBody*)list->data;
 
-			//currentBody->ApplyAeroDrag();
-			//currentBody->ApplyAeroLift();
+			dynamicBody->ApplyAeroDrag();
+			//dynamicBody->ApplyAeroLift();
 
-			currentBody->SecondNewton();
+			// Second law newton
+			dynamicBody->SecondNewton();
 
-			currentBody->acceleration += currentBody->gravityAcceleration;
+			// Applying gravity acceleration post second law newton
+			dynamicBody->acceleration += dynamicBody->gravityAcceleration;
 
-			Integrate(currentBody, dt);
+			// Integrate
+			Integrate(dynamicBody, dt);
 
-			currentBody->acceleration = { 0.0f,0.0f };
+			dynamicBody->acceleration = { 0.0f,0.0f };
 		}
-		list->data->collider->SetPos((int)list->data->position.x, (int)list->data->position.y);
+
+		// Setting rect colliders position
+		if (list->data->collider != nullptr)
+			list->data->collider->SetPos((int)list->data->position.x, (int)list->data->position.y);
+
+		// Setting circle colliders position
+		if (list->data->circlecollider != nullptr)
+			list->data->circlecollider->SetPos((int)list->data->position.x, (int)list->data->position.y);
 
 		// Check Colls
 		CheckCollisions();
@@ -138,18 +148,20 @@ void Physics::Draw(Body* body)
 		switch (body->colliderType)
 		{
 		case PLAYER:
-			app->render->DrawRectangle(body->collider->r1, 0, 100, 0); // Green
+			// Green
+			app->render->DrawRectangle({ METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h) }, 0, 100, 0);
 			break;
 		case GROUND:
-			app->render->DrawRectangle(body->collider->r1, 0, 191, 255); // Sky blue
+			// Sky blue
+			app->render->DrawRectangle({ METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h) }, 0, 191, 255);
 			break;
 		case WALL:
-			app->render->DrawRectangle(body->collider->r1, 123, 104, 238); // Mediumslateblue
+			// Mediumslateblue
+			app->render->DrawRectangle({ METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h) }, 123, 104, 238);
 			break;
 		default:
 			break;
 		}
-		//app->render->DrawRectangle({METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h)}, 0, 100, 0);
 		// TODO: CONVERT TO PIXELS
 	}
 }
@@ -163,8 +175,8 @@ void Physics::ChangeGravityAcceleration(fPoint acceleration)
 		// Integrate
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
-			DynamicBody* temp = (DynamicBody*)list->data;
-			temp->gravityAcceleration = acceleration;
+			DynamicBody* dynamicBody = (DynamicBody*)list->data;
+			dynamicBody->gravityAcceleration = acceleration;
 		}
 	}
 }
@@ -177,7 +189,7 @@ void Physics::CheckCollisions()
 	{
 		for (bodyList2 = bodyList.start; bodyList2 != NULL; bodyList2 = bodyList2->next)
 		{
-			if (bodyList1->data != bodyList2->data)
+			if (bodyList1->data != bodyList2->data && bodyList1->data->collider != nullptr && bodyList2->data->collider != nullptr)
 			{
 				if ((bodyList1->data->collider->CheckCollision(bodyList1->data->collider->r1, bodyList2->data->collider->r1))) // True if collided
 				{
@@ -189,23 +201,41 @@ void Physics::CheckCollisions()
 	}
 }
 
-Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , SDL_Texture* texture_ , Collider* collider_ , fPoint velocity_ , fPoint gravity_ , fPoint acceleration_ , uint mass_)
+Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , fPoint position_ ,SDL_Texture* texture_ , Collider* collider_ , fPoint velocity_ , fPoint gravity_ , fPoint acceleration_ , uint mass_)
 {
 	if (bodyType_ == STATIC_BODY)
 	{
-		Body* newBody = new StaticBody(colliderType_, texture_, collider_,mass_);
+		Body* newBody = new StaticBody(position_, colliderType_, texture_, collider_,mass_);
 		bodyList.add(newBody);
 		return newBody;
 	}
 	else if (bodyType_ == DYNAMIC_BODY)
 	{
-		Body* newBody = new DynamicBody(velocity_, gravity_, acceleration_,colliderType_, texture_, collider_,mass_);
+		Body* newBody = new DynamicBody(position_,velocity_, gravity_, acceleration_,colliderType_, texture_, collider_,mass_);
 		bodyList.add(newBody);
 		return newBody;
 	}
 }
 
-void DynamicBody::SetGravityAcceleration(fPoint gravity)
+Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_, fPoint position_ ,SDL_Texture* texture_, CircleCollider* collider_, fPoint velocity_, fPoint gravity_, fPoint acceleration_, uint mass_)
+{
+	position_ = { PIXEL_TO_METERS(position_.x),PIXEL_TO_METERS(position_.y) };
+
+	if (bodyType_ == STATIC_BODY)
+	{
+		Body* newBody = new StaticBody(position_,colliderType_, texture_, collider_, mass_);
+		bodyList.add(newBody);
+		return newBody;
+	}
+	else if (bodyType_ == DYNAMIC_BODY)
+	{
+		Body* newBody = new DynamicBody(position_,velocity_, gravity_, acceleration_, colliderType_, texture_, collider_, mass_);
+		bodyList.add(newBody);
+		return newBody;
+	}
+}
+
+void DynamicBody::SetGravityAcceleration(fPoint& gravity)
 {
 	this->gravityAcceleration = gravity;
 }

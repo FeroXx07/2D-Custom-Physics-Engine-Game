@@ -14,6 +14,7 @@ public:
 	float x = 0.0f, y = 0.0f;
 	float radius = 0.0f;
 	SString name;
+
 	double distance(int x1, int y1, int x2, int y2)
 	{
 		//Return the distance between the two points
@@ -64,13 +65,18 @@ public:
 		}
 
 		//If the closest point is inside the circle
-		if (distance(a.x, a.y, cX, cY) < a.radius * a.radius)
+		if (distance(a.x, a.y, cX, cY) < a.radius)
 		{
 			//This box and the circle have collided
 			return true;
 		}
 		//If the shapes have not collided
 		return false;
+	}
+	void SetPos(int x_, int y_)
+	{
+		x = x_;
+		y = y_;
 	}
 };
 
@@ -133,9 +139,11 @@ public:
 		}
 
 		//If the closest point is inside the circle
-		if (distance(a.x, a.y, cX, cY) < a.radius )
+		if (int dist = distance(a.x, a.y, cX, cY) < a.radius)
 		{
 			//This box and the circle have collided
+			if (dist == 0.0f)
+				return false;
 			return true;
 		}
 		//If the shapes have not collided

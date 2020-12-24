@@ -21,6 +21,7 @@ class Audio;
 class Scene;
 class Map;
 class Physics;
+class Player;
 
 class App
 {
@@ -93,6 +94,7 @@ public:
 	Scene* scene;
 	Map* map;
 	Physics* physics;
+	Player* player;
 private:
 
 	int argc;

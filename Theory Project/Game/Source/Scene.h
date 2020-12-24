@@ -15,6 +15,9 @@ public:
 		orbit.x = planet.x;
 		orbit.y = planet.y;
 	}
+	DynamicBody* planetBody = nullptr;
+	DynamicBody* orbitBody = nullptr;
+
 	CircleCollider planet;
 	CircleCollider orbit;
 };
@@ -48,12 +51,20 @@ public:
 
 private:
 	SDL_Texture* img;
-	DynamicBody* theSquareBody;
 public:
 	List<Planet*> planets;
-	Planet* AddPlanet(CircleCollider& planet, CircleCollider& orbit)
+
+	Planet* AddPlanet(CircleCollider& orbit, int planetRadius)
 	{
+		CircleCollider planet = orbit;
+		planet.radius = planetRadius;
 		Planet* p = new Planet(planet, orbit);
+		p->planetBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { orbit.x,orbit.y }, NULL, &(p->orbit), { 0.0f,0.0f }, { 0.0f,0.0f });
+		p->planetBody->mass = 1000.0f;
+		
+		p->orbitBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { orbit.x,orbit.y }, NULL, &(p->planet), { 0.0f,0.0f }, { 0.0f,0.0f });
+		p->orbitBody->mass = 1000.0f;
+
 		planets.add(p);
 		return p;
 	}
