@@ -7,6 +7,16 @@
 
 struct SDL_Texture;
 
+enum SceneType
+{
+	MAIN_MENU = -1,
+	LEVEL_SELECTOR,
+	LEVEL_1,
+	LEVEL_2,
+	LEVEL_3,
+	PAUSE_MENU
+};
+
 struct Planet
 {
 public:
@@ -48,6 +58,28 @@ public:
 
 	// Called before quitting
 	bool CleanUp();
+
+	SceneType GetScene() const
+	{
+		return scene;
+	}
+
+	void SetScene(SceneType changeScene);
+
+private:
+	SceneType scene;
+
+	void UpdateMainMenu();
+	void UpdateLevelSelector();
+	void UpdateLevels();
+	void UpdatePauseMenu();
+
+	void SetMainMenu();
+	void SetLevelSelector();
+	void SetLevel1();
+	void SetLevel2();
+	void SetLevel3();
+	void SetPauseMenu();
 
 private:
 	SDL_Texture* img;
