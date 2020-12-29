@@ -82,8 +82,8 @@ bool Scene::PostUpdate()
 		app->render->DrawCircle(METERS_TO_PIXELS(currentOrbit.x), METERS_TO_PIXELS(currentOrbit.y), currentOrbit.radius, 0, 191, 255);
 	}
 
-	if(app->input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN)
-		ret = false;
+	if(app->input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN) ret = false;
+	if (skip == true) ret = false;
 
 	return ret;
 }
@@ -93,6 +93,12 @@ bool Scene::CleanUp()
 	LOG("Freeing scene");
 	if (img != nullptr && img != NULL)
 		app->tex->UnLoad(img);
+
+	if (mainMenuBackground != nullptr && img != NULL)
+		app->tex->UnLoad(mainMenuBackground);
+
+	if (mainMenuArrow.arrowTex != nullptr && img != NULL)
+		app->tex->UnLoad(mainMenuArrow.arrowTex);
 
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
@@ -114,15 +120,27 @@ bool Scene::CleanUp()
 
 void Scene::UpdateMainMenu()
 {
+	app->render->DrawTexture(mainMenuBackground, 0, 0);
+
+	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y);
+
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
-		SetScene(LEVEL_1);
+		if (mainMenuArrow.selection == 1) SetScene(LEVEL_SELECTOR);
+		else if (mainMenuArrow.selection == 2) skip = true;
 	}
+
+	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && mainMenuArrow.selection == 2) mainMenuArrow.selection = 1;
+
+	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && mainMenuArrow.selection == 1) mainMenuArrow.selection = 2;
 }
 
 void Scene::UpdateLevelSelector()
 {
-	//Update Main Menu
+	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+	{
+		SetScene(LEVEL_1);
+	}
 }
 
 void Scene::UpdateLevels()
@@ -187,7 +205,11 @@ void Scene::SetScene(SceneType changeScene)
 
 void Scene::SetMainMenu()
 {
-	//LOAD IMAGE BACKGROUND
+	mainMenuBackground = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
+
+	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	mainMenuArrow.selection = 1;
+
 	//LOAD IMAGE TITLE
 	//LOAD IMAGE PLAY
 }

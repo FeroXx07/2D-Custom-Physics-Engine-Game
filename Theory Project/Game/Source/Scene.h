@@ -32,6 +32,14 @@ public:
 	CircleCollider orbit;
 };
 
+struct SelectorArrow
+{
+	SelectorArrow() : position{ { -300, 0 }, {400, 600}, {400, 775} }{}
+	SDL_Texture* arrowTex;
+	const iPoint position[3]; //position[0] == OUT OF WINDOW // position[1] == PLAY GAME // position[2] == SKIP GAME
+	uint selection;
+};
+
 class Scene : public Module
 {
 public:
@@ -67,6 +75,8 @@ public:
 	void SetScene(SceneType changeScene);
 
 private:
+
+	bool skip = false;
 	SceneType scene;
 
 	void UpdateMainMenu();
@@ -83,6 +93,10 @@ private:
 
 private:
 	SDL_Texture* img;
+	SDL_Texture* mainMenuBackground;
+	SelectorArrow mainMenuArrow;
+	SelectorArrow LevelSelectArrow;
+
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;
