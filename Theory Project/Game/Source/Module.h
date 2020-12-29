@@ -11,8 +11,10 @@ class Module
 {
 public:
 
-	Module() : active(false)
-	{}
+	Module(bool startEnabled = true) : active(false)
+	{
+		isEnabled = startEnabled;
+	}
 
 	void Init()
 	{
@@ -53,8 +55,33 @@ public:
 	// Called before quitting
 	virtual bool CleanUp()
 	{
+		active = false;
+		isEnabled = false;
 		return true;
 	}
+
+	// Switches isEnabled and calls Start() method
+	void Enable()
+	{
+		if (!isEnabled)
+		{
+			isEnabled = true;
+			Start();
+		}
+	}
+
+	// Switches isEnabled and calls CleanUp() method
+	void Disable()
+	{
+		if (isEnabled)
+		{
+			isEnabled = false;
+			CleanUp();
+		}
+	}
+
+	inline bool IsEnabled() const { return isEnabled; }
+
 
     // L02: DONE 2: Create new virtual methods to Load / Save state
 	virtual bool LoadState(pugi::xml_node&)
@@ -72,6 +99,8 @@ public:
 	SString name;
 	bool active;
 
+private:
+	bool isEnabled = true;
 };
 
 #endif // __MODULE_H__

@@ -53,7 +53,10 @@ private:
 	SDL_Texture* img;
 public:
 	List<Planet*> planets;
+	List<Body*> bodies;
 
+
+	Planet* theVoid = nullptr;
 	Planet* AddPlanet(CircleCollider& orbit, int planetRadius)
 	{
 		CircleCollider planet = orbit;

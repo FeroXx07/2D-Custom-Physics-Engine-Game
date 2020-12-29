@@ -41,6 +41,7 @@ public:
 	void Input();
 
 	DynamicBody* playerBody;
+	fPoint theVoidPos;
 	bool onOrbit = false;
 
 };

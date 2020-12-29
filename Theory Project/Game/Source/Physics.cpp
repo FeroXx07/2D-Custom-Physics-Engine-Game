@@ -67,7 +67,19 @@ bool Physics::PostUpdate()
 bool Physics::CleanUp()
 {
 	LOG("Freeing scene");
+	ListItem<Body*>* list;
+	for (list = bodyList.start; list != NULL; list = list->next)
+	{
+		if (list->data->collider != NULL)
+			delete list->data->collider;
 
+		if (list->data->circlecollider != NULL)
+			delete list->data->collider;
+
+		delete list->data;
+		bodyList.del(list);
+	}
+	bodyList.clear();
 	return true;
 }
 

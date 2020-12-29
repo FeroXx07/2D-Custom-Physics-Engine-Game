@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "Map.h"
 #include "Player.h"
+#include "ModuleFadeToBlack.h"
 
 #include "Defs.h"
 #include "Log.h"
@@ -37,36 +38,60 @@ bool Scene::Start()
 {
 	img = app->tex->Load("Assets/textures/SpaceshipLow.png");
 
+	if (app->player->IsEnabled() == false)
+	{
+		app->player->Enable();
+	}
+
 	Collider* groundColl = new Collider({ 0,0,1920,20 });
 	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, { 0,1060 }, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	bodies.add(groundBody);
 	groundBody->mass = 10;
 
 	Collider* roofColl = new Collider({ 0,0,1920,20 });
 	Body* roofBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, { 0,0 }, NULL, roofColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	bodies.add(roofBody);
 	roofBody->mass = 10;
 
 	Collider* leftWallColl = new Collider({ 0,0,20,1080 });
 	Body* leftWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, { 0,0 }, NULL, leftWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	bodies.add(leftWallBody);
 	leftWallBody->mass = 10;
 
 	Collider* rightWallColl = new Collider({ 0,0,20,1080 });
 	Body* rightWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, { 1900,0 }, NULL, rightWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
+	bodies.add(rightWallBody);
 	rightWallBody->mass = 10;
 
-	AddPlanet(CircleCollider(150, 300, 100), 10);
+	AddPlanet(CircleCollider(150, 150, 100), 10);
 	AddPlanet(CircleCollider(600, 600, 100), 10);
-
 	AddPlanet(CircleCollider(900, 300, 100), 10);
-
 	AddPlanet(CircleCollider(1400, 600, 100), 10);
 
-	app->physics->ChangeGravityAcceleration({ 0.0f, 10.0f });
+	theVoid = AddPlanet(CircleCollider(1920 / 2, 1500, 800), 600);
+
+	app->player->theVoidPos = theVoid->planetBody->position;
+
+	app->player->playerBody->position = { 120, 20 };
+	app->player->playerBody->velocity = { 0, 0 };
 
 	ListItem<Planet*>*list;
 	for (list = planets.start; list != NULL; list = list->next)
 	{
-		list->data->planetBody->gravityAcceleration = { 0.0f,0.0f };
-		list->data->orbitBody->gravityAcceleration = { 0.0f,0.0f };
+		if (list->data == theVoid)
+			continue;
+
+		float force = 1.0f;
+
+		fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
+
+		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+		list->data->planetBody->SetGravityAcceleration(directionGravity);
+		list->data->orbitBody->SetGravityAcceleration(directionGravity);
 	}
 	return true;
 }
@@ -74,9 +99,22 @@ bool Scene::Start()
 // Called each loop iteration
 bool Scene::PreUpdate(float dt)
 {
+	if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_REPEAT)
+		app->fade->FadeToBlack(this, this);
+
+	return true;
+}
+
+// Called each loop iteration
+bool Scene::Update(float dt)
+{
 	app->player->onOrbit = false;
+
 	for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
 	{
+		if (list->data == theVoid)
+			continue;
+
 		CircleCollider currentPlanet = list->data->planet;
 		CircleCollider currentOrbit = list->data->orbit;
 
@@ -103,15 +141,6 @@ bool Scene::PreUpdate(float dt)
 			LOG("PLANET!!!!");
 		}
 	}
-
-	
-	return true;
-}
-
-// Called each loop iteration
-bool Scene::Update(float dt)
-{
-
 	return true;
 }
 
@@ -139,6 +168,20 @@ bool Scene::PostUpdate()
 bool Scene::CleanUp()
 {
 	LOG("Freeing scene");
+	if (img != nullptr && img != NULL)
+		app->tex->UnLoad(img);
+
+	ListItem<Planet*>* listPlanet;
+	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
+	{
+		delete listPlanet->data;
+		planets.del(listPlanet);
+	}
+	planets.clear();
+
+	app->player->Disable();
+	app->physics->CleanUp();
+	theVoid = nullptr;
 
 	return true;
 } 

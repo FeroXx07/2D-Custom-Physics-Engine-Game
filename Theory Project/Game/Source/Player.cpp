@@ -10,7 +10,7 @@
 #include "Defs.h"
 #include "Log.h"
 
-#define FORCE 20.0f
+#define FORCE 17.0f
 #define TURN_ANGLE 2.0f
 
 Player::Player() : Module()
@@ -83,6 +83,8 @@ bool Player::PreUpdate(float dt)
 	{
 		playerBody->rotation += TURN_ANGLE;
 	}
+
+	onOrbit = false;
 	return true;
 }
 
@@ -93,7 +95,17 @@ bool Player::Update(float dt)
 	{
 		// Return to default
 		playerBody->coeficientAeroDrag = { 0.0001f, 0.0001f };
-		playerBody->SetGravityAcceleration(fPoint{ 0.0f, 40.0f });
+
+		float force = 25.0f;
+
+		fPoint directionGravity = theVoidPos - playerBody->position;
+
+		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+		playerBody->SetGravityAcceleration(directionGravity);
 	}
 
 	LOG("ROTATION = %f", playerBody->rotation);
@@ -113,7 +125,7 @@ bool Player::PostUpdate()
 bool Player::CleanUp()
 {
 	LOG("Freeing scene");
-
+	app->tex->UnLoad(img);
 	return true;
 }
 

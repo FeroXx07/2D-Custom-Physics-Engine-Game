@@ -20,6 +20,7 @@
     <ClCompile Include="Source\Timer.cpp" />
     <ClCompile Include="Source\Physics.cpp" />
     <ClCompile Include="Source\Player.cpp" />
+    <ClCompile Include="Source\ModuleFadeToBlack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Window.h" />
@@ -60,6 +61,7 @@
     <ClInclude Include="Source\Collider.h" />
     <ClInclude Include="Source\Physics.h" />
     <ClInclude Include="Source\Player.h" />
+    <ClInclude Include="Source\ModuleFadeToBlack.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="External">

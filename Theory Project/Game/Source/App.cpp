@@ -4,6 +4,7 @@
 #include "Render.h"
 #include "Textures.h"
 #include "Audio.h"
+#include "ModuleFadeToBlack.h"
 #include "Scene.h"
 #include "Map.h"
 #include "Physics.h"
@@ -33,16 +34,18 @@ App::App(int argc, char* args[]) : argc(argc), args(args)
 	map = new Map();
 	physics = new Physics();
 	player = new Player();
+	fade = new ModuleFadeToBlack();
 	// Ordered for awake / Start / Update
 	// Reverse order of CleanUp
 	AddModule(win);
 	AddModule(input);
 	AddModule(tex);
 	AddModule(audio);
+	AddModule(player);
 	AddModule(scene);
 	AddModule(map);
 	AddModule(physics);
-	AddModule(player);
+	AddModule(fade);
 	// Render last to swap buffer
 	AddModule(render);
 	
@@ -132,7 +135,10 @@ bool App::Start()
 
 	while(item != NULL && ret == true)
 	{
-		ret = item->data->Start();
+		if (item->data->IsEnabled() == true)
+		{
+			ret = item->data->Start();
+		}
 		item = item->next;
 	}
 	
@@ -247,7 +253,7 @@ bool App::PreUpdate()
 	{
 		pModule = item->data;
 
-		if(pModule->active == false) {
+		if(pModule->active == false || (pModule->IsEnabled() == false)) {
 			continue;
 		}
 
@@ -269,7 +275,7 @@ bool App::DoUpdate()
 	{
 		pModule = item->data;
 
-		if(pModule->active == false) {
+		if(pModule->active == false || (pModule->IsEnabled() == false)) {
 			continue;
 		}
 
@@ -292,7 +298,7 @@ bool App::PostUpdate()
 	{
 		pModule = item->data;
 
-		if(pModule->active == false) {
+		if(pModule->active == false || (pModule->IsEnabled() == false)) {
 			continue;
 		}
 
