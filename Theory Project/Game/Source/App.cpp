@@ -33,7 +33,7 @@ App::App(int argc, char* args[]) : argc(argc), args(args)
 	scene = new Scene();
 	map = new Map();
 	physics = new Physics();
-	player = new Player();
+	player = new Player(false);
 	fade = new ModuleFadeToBlack();
 	// Ordered for awake / Start / Update
 	// Reverse order of CleanUp

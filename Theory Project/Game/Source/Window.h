@@ -27,8 +27,12 @@ public:
 	// Retrive window size
 	void GetWindowSize(uint& width, uint& height) const;
 
+	void SetWindowSize(uint& width, uint& height);
+
 	// Retrieve window scale
-	uint GetScale() const;
+	float GetScale() const;
+
+	void SetScale(float scale_);
 
 public:
 	// The window we'll be rendering to
@@ -41,7 +45,7 @@ private:
 	SString title;
 	uint width;
 	uint height;
-	uint scale;
+	float scale;
 };
 
 #endif // __WINDOW_H__

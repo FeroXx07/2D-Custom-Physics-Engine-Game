@@ -100,7 +100,7 @@ public:
 	bool active;
 
 private:
-	bool isEnabled = true;
+	bool isEnabled;
 };
 
 #endif // __MODULE_H__

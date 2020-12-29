@@ -12,7 +12,7 @@ class Player : public Module
 {
 public:
 
-	Player();
+	Player(bool isEnabled);
 
 	// Destructor
 	virtual ~Player();
@@ -39,10 +39,12 @@ private:
 	SDL_Texture* img;
 public:
 	void Input();
+	bool OutOfBounds();
 
 	DynamicBody* playerBody;
 	fPoint theVoidPos;
 	bool onOrbit = false;
+	float attractionForce = 105.0f;
 
 };
 

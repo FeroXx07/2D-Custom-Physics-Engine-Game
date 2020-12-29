@@ -38,11 +38,6 @@ bool Scene::Start()
 {
 	img = app->tex->Load("Assets/textures/SpaceshipLow.png");
 
-	if (app->player->IsEnabled() == false)
-	{
-		app->player->Enable();
-	}
-
 	//Set Initial Scene
 	SetScene(MAIN_MENU);
 
@@ -52,8 +47,8 @@ bool Scene::Start()
 // Called each loop iteration
 bool Scene::PreUpdate(float dt)
 {
-	if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_REPEAT)
-		app->fade->FadeToBlack(this, this);
+	//if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_REPEAT)
+	//	app->fade->FadeToBlack(this, this);
 
 	return true;
 }
@@ -94,16 +89,16 @@ bool Scene::CleanUp()
 	if (img != nullptr && img != NULL)
 		app->tex->UnLoad(img);
 
-	if (mainMenuBackground != nullptr && img != NULL)
+	if (mainMenuBackground != nullptr && mainMenuBackground != NULL)
 		app->tex->UnLoad(mainMenuBackground);
 
-	if (mainMenuArrow.arrowTex != nullptr && img != NULL)
+	if (mainMenuArrow.arrowTex != nullptr && mainMenuArrow.arrowTex != NULL)
 		app->tex->UnLoad(mainMenuArrow.arrowTex);
 
-	if (levelSelectArrow.arrowTex != nullptr && img != NULL)
+	if (levelSelectArrow.arrowTex != nullptr && levelSelectArrow.arrowTex != NULL)
 		app->tex->UnLoad(levelSelectArrow.arrowTex);
 
-	if (levelSelectBackground != nullptr && img != NULL)
+	if (levelSelectBackground != nullptr && levelSelectBackground != NULL)
 		app->tex->UnLoad(levelSelectBackground);
 
 	ListItem<Planet*>* listPlanet;
@@ -120,7 +115,6 @@ bool Scene::CleanUp()
 
 	return true;
 }
-
 
 //UPDATERS
 
@@ -161,12 +155,20 @@ void Scene::UpdateLevelSelector()
 
 void Scene::UpdateLevels()
 {
+	if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
+		SetScene(LEVEL_1);
+
 	app->player->onOrbit = false;
 
 	for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
 	{
 		if (list->data == theVoid)
+		{
+			if (app->player->playerBody->position.y + app->player->playerBody->collider->r1.h >= theVoid->planetBody->position.y)
+				SetScene(LEVEL_1);
 			continue;
+		}
+
 
 		CircleCollider currentPlanet = list->data->planet;
 		CircleCollider currentOrbit = list->data->orbit;
@@ -175,7 +177,7 @@ void Scene::UpdateLevels()
 		{
 			// Collision with orbit
 			LOG("ORBIT!!!!");
-			float force = 105.0f;
+			float force = 55.0f;
 
 			fPoint directionGravity = fPoint({ currentPlanet.x,currentPlanet.y }) - app->player->playerBody->position;
 
@@ -206,7 +208,7 @@ void Scene::UpdatePauseMenu()
 
 void Scene::SetScene(SceneType changeScene)
 {
-	//CleanUp();
+	CleanUp();
 
 	scene = changeScene;
 
@@ -244,7 +246,12 @@ void Scene::SetLevelSelector()
 
 void Scene::SetLevel1()
 {
-	Collider* groundColl = new Collider({ 0,0,1920,20 });
+	if (app->player->IsEnabled() == false)
+	{
+		app->player->Enable();
+	}
+
+	/*Collider* groundColl = new Collider({ 0,0,1920,20 });
 	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, { 0,1060 }, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
 	bodies.add(groundBody);
 	groundBody->mass = 10;
@@ -262,7 +269,7 @@ void Scene::SetLevel1()
 	Collider* rightWallColl = new Collider({ 0,0,20,1080 });
 	Body* rightWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, { 1900,0 }, NULL, rightWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
 	bodies.add(rightWallBody);
-	rightWallBody->mass = 10;
+	rightWallBody->mass = 10;*/
 
 	AddPlanet(CircleCollider(150, 150, 100), 10);
 	AddPlanet(CircleCollider(600, 600, 100), 10);
@@ -278,24 +285,24 @@ void Scene::SetLevel1()
 
 	//Set Planet/Orbit Gravity
 
-	ListItem<Planet*>* list;
-	for (list = planets.start; list != NULL; list = list->next)
-	{
-		if (list->data == theVoid)
-			continue;
+	//ListItem<Planet*>* list;
+	//for (list = planets.start; list != NULL; list = list->next)
+	//{
+	//	if (list->data == theVoid)
+	//		continue;
 
-		float force = 1.0f;
+	//	float force = 1.0f;
 
-		fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
+	//	fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
 
-		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+	//	float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
 
-		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
-		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+	//	directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+	//	directionGravity = { directionGravity.x * force, directionGravity.y * force };
 
-		list->data->planetBody->SetGravityAcceleration(directionGravity); //WRONG
-		list->data->orbitBody->SetGravityAcceleration(directionGravity);
-	}
+	//	list->data->planetBody->SetGravityAcceleration(directionGravity); //WRONG
+	//	list->data->orbitBody->SetGravityAcceleration(directionGravity);
+	//}
 
 }
 

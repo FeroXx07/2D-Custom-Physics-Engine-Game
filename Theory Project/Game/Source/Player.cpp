@@ -13,7 +13,7 @@
 #define FORCE 17.0f
 #define TURN_ANGLE 2.0f
 
-Player::Player() : Module()
+Player::Player(bool isEnabled) : Module(isEnabled)
 {
 	name.Create("player");
 }
@@ -96,16 +96,23 @@ bool Player::Update(float dt)
 		// Return to default
 		playerBody->coeficientAeroDrag = { 0.0001f, 0.0001f };
 
-		float force = 25.0f;
+		attractionForce = 105.0f;
 
 		fPoint directionGravity = theVoidPos - playerBody->position;
 
 		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
 
 		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
-		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+		directionGravity = { directionGravity.x * attractionForce, directionGravity.y * attractionForce };
 
 		playerBody->SetGravityAcceleration(directionGravity);
+
+		if (OutOfBounds() == true)
+		{
+			fPoint funnyForce = directionGravity;
+			funnyForce = { funnyForce.x * 10000, funnyForce.y * 10000 };
+			playerBody->ApplyForce(funnyForce);
+		}
 	}
 
 	LOG("ROTATION = %f", playerBody->rotation);
@@ -188,4 +195,18 @@ void Player::Input()
 		direction.Negate();
 		playerBody->ApplyForce(direction);
 	}
+}
+
+bool Player::OutOfBounds()
+{
+	if (playerBody->position.y <= -50)
+	{
+		return true;
+	}
+	else if (playerBody->position.x <= 0 || playerBody->position.x >= 1920)
+	{
+		return true;
+	}
+
+	return false;
 }
