@@ -32,11 +32,19 @@ public:
 	CircleCollider orbit;
 };
 
-struct SelectorArrow
+struct MMSelectorArrow
 {
-	SelectorArrow() : position{ { -300, 0 }, {400, 600}, {400, 775} }{}
+	MMSelectorArrow() : position{ { -300, 0 }, {525, 675}, {525, 800} }{}
 	SDL_Texture* arrowTex;
 	const iPoint position[3]; //position[0] == OUT OF WINDOW // position[1] == PLAY GAME // position[2] == SKIP GAME
+	uint selection;
+};
+
+struct LSSelectorArrow
+{
+	LSSelectorArrow() : position{ { -300, 0 }, {300, 540}, {825, 540}, {1350, 540} } {}
+	SDL_Texture* arrowTex;
+	const iPoint position[4]; //position[0] == OUT OF WINDOW // position[1] == LEVEL 1 // position[2] == LEVEL 2 // position[3] == LEVEL 3
 	uint selection;
 };
 
@@ -94,8 +102,10 @@ private:
 private:
 	SDL_Texture* img;
 	SDL_Texture* mainMenuBackground;
-	SelectorArrow mainMenuArrow;
-	SelectorArrow LevelSelectArrow;
+	SDL_Texture* levelSelectBackground;
+
+	MMSelectorArrow mainMenuArrow;
+	LSSelectorArrow levelSelectArrow;
 
 public:
 	List<Planet*> planets;

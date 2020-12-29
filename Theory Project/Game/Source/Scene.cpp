@@ -100,6 +100,12 @@ bool Scene::CleanUp()
 	if (mainMenuArrow.arrowTex != nullptr && img != NULL)
 		app->tex->UnLoad(mainMenuArrow.arrowTex);
 
+	if (levelSelectArrow.arrowTex != nullptr && img != NULL)
+		app->tex->UnLoad(levelSelectArrow.arrowTex);
+
+	if (levelSelectBackground != nullptr && img != NULL)
+		app->tex->UnLoad(levelSelectBackground);
+
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
@@ -137,10 +143,20 @@ void Scene::UpdateMainMenu()
 
 void Scene::UpdateLevelSelector()
 {
+	app->render->DrawTexture(levelSelectBackground, 0, 0);
+
+	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y);
+
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
-		SetScene(LEVEL_1);
+		if (levelSelectArrow.selection == 1) SetScene(LEVEL_1);
+		else if (levelSelectArrow.selection == 2) SetScene(LEVEL_2);
+		else if (levelSelectArrow.selection == 3) SetScene(LEVEL_3);
 	}
+
+	if (app->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && levelSelectArrow.selection != 1) levelSelectArrow.selection--;
+
+	if (app->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN && levelSelectArrow.selection != 3) levelSelectArrow.selection++;
 }
 
 void Scene::UpdateLevels()
@@ -216,11 +232,14 @@ void Scene::SetMainMenu()
 
 void Scene::SetLevelSelector()
 {
-	//LOAD IMAGE BACKGROUND
+	levelSelectBackground = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
+
+	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	levelSelectArrow.selection = 1;
+
 	//LOAD IMAGE LEVEL 1
 	//LOAD IMAGE LEVEL 2
 	//LOAD IMAGE LEVEL 3
-	//LOAD IMAGE SELECTOR TRIANGLE
 }
 
 void Scene::SetLevel1()
