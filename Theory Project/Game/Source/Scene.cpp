@@ -279,6 +279,8 @@ void Scene::SetMainMenu()
 	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
 	mainMenuArrow.selection = 1;
 
+	app->audio->PlayMusic("Assets/audio/Music/MAIN_MENU_MUSIC.ogg");
+
 	//LOAD IMAGE TITLE
 	//LOAD IMAGE PLAY
 }
@@ -289,6 +291,8 @@ void Scene::SetLevelSelector()
 
 	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
 	levelSelectArrow.selection = 1;
+
+	app->audio->PlayMusic("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg");
 
 	//LOAD IMAGE LEVEL 1
 	//LOAD IMAGE LEVEL 2
