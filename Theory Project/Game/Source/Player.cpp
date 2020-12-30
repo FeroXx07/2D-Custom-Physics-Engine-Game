@@ -16,6 +16,15 @@
 Player::Player(bool isEnabled) : Module(isEnabled)
 {
 	name.Create("player");
+
+	// spaceship animation
+	spaceshipAnim.PushBack({ 0, 0, 662, 226 });
+	spaceshipAnim.PushBack({ 696, 23, 649, 203 });
+	spaceshipAnim.PushBack({ 15, 274, 649, 203 });
+	spaceshipAnim.PushBack({ 764, 275, 649, 203 });
+	spaceshipAnim.loop = true;
+	spaceshipAnim.speed = 0.1f;
+
 }
 
 // Destructor
@@ -34,7 +43,7 @@ bool Player::Awake()
 // Called before the first frame
 bool Player::Start()
 {
-	img = app->tex->Load("Assets/textures/SpaceshipLow.png");
+	img = app->tex->Load("Assets/textures/spaceship_spritesheet.png");
 
 	Collider* theSquareColl = new Collider({ 0,0,10,10 });
 	playerBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, { 120,20 }, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });

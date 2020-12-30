@@ -4,6 +4,7 @@
 #include "Module.h"
 #include "Physics.h"
 #include "List.h"
+#include "Animation.h"
 
 struct SDL_Texture;
 struct Planet;
@@ -37,6 +38,7 @@ public:
 
 private:
 	SDL_Texture* img;
+	
 public:
 	void Input();
 	bool OutOfBounds();
@@ -45,6 +47,9 @@ public:
 	fPoint theVoidPos;
 	bool onOrbit = false;
 	float attractionForce = 105.0f;
+
+public:
+	Animation spaceshipAnim;
 
 };
 
