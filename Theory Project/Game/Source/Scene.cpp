@@ -56,6 +56,13 @@ bool Scene::PreUpdate(float dt)
 // Called each loop iteration
 bool Scene::Update(float dt)
 {
+	/*if (scene == MAIN_MENU) LOG("MAIN_MENU");
+	else if (scene == LEVEL_SELECTOR) LOG("LEVEL_SELECTOR");
+	else if (scene == LEVEL_1) LOG("LEVEL_1");
+	else if (scene == LEVEL_2) LOG("LEVEL_2");
+	else if (scene == LEVEL_3) LOG("LEVEL_3");
+	else if (scene == PAUSE_MENU) LOG("PAUSE_MENU");*/
+
 	if (scene == MAIN_MENU) UpdateMainMenu();
 	else if (scene == LEVEL_SELECTOR) UpdateLevelSelector();
 	else if ((scene == LEVEL_1) || (scene == LEVEL_2) || (scene == LEVEL_3)) UpdateLevels();
@@ -162,6 +169,10 @@ void Scene::UpdateLevelSelector()
 	if (app->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && levelSelectArrow.selection != 1) levelSelectArrow.selection--;
 
 	if (app->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN && levelSelectArrow.selection != 3) levelSelectArrow.selection++;
+
+	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && levelSelectArrow.selection == 4) levelSelectArrow.selection = 1;
+
+	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && levelSelectArrow.selection != 4) levelSelectArrow.selection = 4;
 }
 
 void Scene::UpdateLevels()
@@ -229,10 +240,15 @@ void Scene::UpdatePauseMenu()
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
 		pause = false;
-		app->physics->Enable();
 
-		if (pauseMenuArrow.selection == 2) SetScene(LEVEL_SELECTOR);
+		if (pauseMenuArrow.selection == 1) scene = currentScene;
+		else if (pauseMenuArrow.selection == 2) SetScene(LEVEL_SELECTOR);
 		else if (pauseMenuArrow.selection == 3) SetScene(MAIN_MENU);
+	}
+	else if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN)
+	{
+		pause = false;
+		scene = currentScene;
 	}
 
 	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && pauseMenuArrow.selection != 1) pauseMenuArrow.selection--;
@@ -354,8 +370,10 @@ void Scene::SetLevel3()
 
 void Scene::SetPauseMenu()
 {
+	currentScene = scene;
 	pause = true;
-	app->physics->Disable();
+	scene = PAUSE_MENU;
+	
 
 	pauseMenu = app->tex->Load("Assets/textures/Menu.png");
 	pauseMenuGradient = app->tex->Load("Assets/textures/MENU_GRADIENT.png");

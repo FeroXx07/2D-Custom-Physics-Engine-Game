@@ -42,9 +42,9 @@ struct MMSelectorArrow
 
 struct LSSelectorArrow
 {
-	LSSelectorArrow() : position{ { -300, 0 }, {300, 540}, {825, 540}, {1350, 540} } {}
+	LSSelectorArrow() : position{ { -300, 0 }, {300, 540}, {825, 540}, {1350, 540}, {300, 810} } {}
 	SDL_Texture* arrowTex;
-	const iPoint position[4]; //position[0] == OUT OF WINDOW // position[1] == LEVEL 1 // position[2] == LEVEL 2 // position[3] == LEVEL 3
+	const iPoint position[5]; //position[0] == OUT OF WINDOW // position[1] == LEVEL 1 // position[2] == LEVEL 2 // position[3] == LEVEL 3 // position[4] == BACK TO MAIN MENU
 	uint selection;
 };
 
@@ -95,6 +95,7 @@ private:
 	bool skip = false;
 	bool pause = false;
 	SceneType scene;
+	SceneType currentScene;
 
 	void UpdateMainMenu();
 	void UpdateLevelSelector();

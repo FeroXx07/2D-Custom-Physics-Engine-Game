@@ -41,7 +41,9 @@ bool Physics::Update(float dt)
 	{
 		dt = 1.0f / 30.0f;
 	}
-	Step(dt);
+
+	if (app->scene->GetScene() == PAUSE_MENU) Step(dt/10000);
+	else { Step(dt); }
 
 	return true;
 }
