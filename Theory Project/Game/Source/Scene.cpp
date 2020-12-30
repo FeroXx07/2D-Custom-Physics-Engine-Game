@@ -36,8 +36,6 @@ bool Scene::Awake()
 // Called before the first frame
 bool Scene::Start()
 {
-	img = app->tex->Load("Assets/textures/SpaceshipLow.png");
-
 	//Set Initial Scene
 	SetScene(MAIN_MENU);
 
@@ -93,8 +91,12 @@ bool Scene::PostUpdate()
 bool Scene::CleanUp()
 {
 	LOG("Freeing scene");
-	if (img != nullptr && img != NULL)
-		app->tex->UnLoad(img);
+
+	if (meteorTexture != nullptr && meteorTexture != NULL)
+		app->tex->UnLoad(meteorTexture);
+
+	if (levelsBackground != nullptr && levelsBackground != NULL)
+		app->tex->UnLoad(levelsBackground);
 
 	if (mainMenuBackground != nullptr && mainMenuBackground != NULL)
 		app->tex->UnLoad(mainMenuBackground);
@@ -117,8 +119,6 @@ bool Scene::CleanUp()
 	if (pauseMenuGradient != nullptr && pauseMenuGradient != NULL)
 		app->tex->UnLoad(pauseMenuGradient);
 
-	
-
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
@@ -126,6 +126,14 @@ bool Scene::CleanUp()
 		planets.del(listPlanet);
 	}
 	planets.clear();
+
+	ListItem<Meteor*>* listMeteors;
+	for (listMeteors = meteors.start; listMeteors != NULL; listMeteors = listMeteors->next)
+	{
+		delete listMeteors->data;
+		meteors.del(listMeteors);
+	}
+	meteors.clear();
 
 	app->player->Disable();
 	app->physics->CleanUp();
@@ -178,6 +186,9 @@ void Scene::UpdateLevelSelector()
 
 void Scene::UpdateLevels()
 {
+	// Draw background
+	app->render->DrawTexture(levelsBackground, 0, 0);
+
 	if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && pause == false)
 	{
 		SetPauseMenu();
@@ -194,11 +205,10 @@ void Scene::UpdateLevels()
 		{
 			if (list->data == theVoid)
 			{
-				if (app->player->playerBody->position.y + app->player->playerBody->collider->r1.h >= theVoid->planetBody->position.y)
+				if (app->player->playerBody->position.y >= theVoid->planetBody->position.y)
 					SetScene(LEVEL_1);
 				continue;
 			}
-
 
 			CircleCollider currentPlanet = list->data->planet;
 			CircleCollider currentOrbit = list->data->orbit;
@@ -224,6 +234,17 @@ void Scene::UpdateLevels()
 			{
 				// Collision with PLANET
 				LOG("PLANET!!!!");
+			}
+		}
+
+		for (ListItem<Meteor*>* listMeteors = meteors.start; listMeteors; listMeteors = listMeteors->next)
+		{
+			SDL_Rect toDraw = { 0,0, listMeteors->data->colliderRect.r1.w, listMeteors->data->colliderRect.r1.h };
+			app->render->DrawTexture(meteorTexture, listMeteors->data->colliderRect.r1.x, listMeteors->data->colliderRect.r1.y, &toDraw);
+
+			if (listMeteors->data->colliderRect.CheckCollision(listMeteors->data->colliderRect.r1, app->player->playerBody->collider->r1))
+			{
+				SetScene(LEVEL_1);
 			}
 		}
 	}
@@ -306,32 +327,35 @@ void Scene::SetLevel1()
 		app->player->Enable();
 	}
 
+	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
+	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
+
 	app->audio->PlayMusic("Assets/audio/Music/LEVEL_SELECTOR_MUSI.ogg", 0);
 
-	/*Collider* groundColl = new Collider({ 0,0,1920,20 });
-	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, { 0,1060 }, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });
-	bodies.add(groundBody);
-	groundBody->mass = 10;
-
-	Collider* roofColl = new Collider({ 0,0,1920,20 });
-	Body* roofBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, { 0,0 }, NULL, roofColl, { 0.0f,0.0f }, { 0.0f,0.0f });
-	bodies.add(roofBody);
-	roofBody->mass = 10;
-
-	Collider* leftWallColl = new Collider({ 0,0,20,1080 });
-	Body* leftWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, { 0,0 }, NULL, leftWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
-	bodies.add(leftWallBody);
-	leftWallBody->mass = 10;
-
-	Collider* rightWallColl = new Collider({ 0,0,20,1080 });
-	Body* rightWallBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::WALL, { 1900,0 }, NULL, rightWallColl, { 0.0f,0.0f }, { 0.0f,0.0f });
-	bodies.add(rightWallBody);
-	rightWallBody->mass = 10;*/
-
 	AddPlanet(CircleCollider(150, 150, 100), 10);
-	AddPlanet(CircleCollider(600, 600, 100), 10);
-	AddPlanet(CircleCollider(900, 300, 100), 10);
-	AddPlanet(CircleCollider(1400, 600, 100), 10);
+	AddPlanet(CircleCollider(150, 500, 100), 10);
+
+	AddMeteor(Collider({ 300,60,20,180 }));
+	AddMeteor(Collider({ 300,360,20,220 }));
+	
+	AddPlanet(CircleCollider(540, 150, 100), 10);
+	AddPlanet(CircleCollider(480, 700, 100), 10);
+	AddPlanet(CircleCollider(800, 400, 100), 10);
+
+	AddMeteor(Collider({ 700,570,20,250 }));
+
+	AddMeteor(Collider({ 920,100,20,300 }));
+	AddMeteor(Collider({ 920,420,300,20 }));
+
+	AddPlanet(CircleCollider(1100, 700, 100), 10);
+	AddPlanet(CircleCollider(1600, 600, 100), 10);
+	AddPlanet(CircleCollider(1100, 200, 100), 10);
+
+	AddMeteor(Collider({ 1500,280,400,20 }));
+
+	/*AddPlanet(CircleCollider(600, 600, 100), 20);
+	AddPlanet(CircleCollider(900, 300, 100), 20);
+	AddPlanet(CircleCollider(1400, 600, 100), 20);*/
 
 	theVoid = AddPlanet(CircleCollider(1920 / 2, 1500, 800), 600);
 
@@ -361,6 +385,8 @@ void Scene::SetLevel1()
 	//	list->data->orbitBody->SetGravityAcceleration(directionGravity);
 	//}
 
+	// To adjust colliders to their correct positions, only once in the start
+	app->physics->Step(1.0f / 60.0f);
 }
 
 void Scene::SetLevel2()

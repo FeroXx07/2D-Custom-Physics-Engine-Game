@@ -32,6 +32,14 @@ public:
 	CircleCollider orbit;
 };
 
+struct Meteor
+{
+public:
+	Meteor(Collider& meteor_) : colliderRect(meteor_) {}
+	StaticBody* meteorBody = nullptr;
+	Collider colliderRect;
+};
+
 struct MMSelectorArrow
 {
 	MMSelectorArrow() : position{ { -300, 0 }, {525, 675}, {525, 800} }{}
@@ -111,11 +119,12 @@ private:
 	void SetPauseMenu();
 
 private:
-	SDL_Texture* img;
 	SDL_Texture* mainMenuBackground;
 	SDL_Texture* levelSelectBackground;
 	SDL_Texture* pauseMenu;
 	SDL_Texture* pauseMenuGradient;
+	SDL_Texture* levelsBackground;
+	SDL_Texture* meteorTexture;
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
@@ -124,22 +133,37 @@ private:
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;
-
+	List<Meteor*> meteors;
 
 	Planet* theVoid = nullptr;
 	Planet* AddPlanet(CircleCollider& orbit, int planetRadius)
 	{
 		CircleCollider planet = orbit;
 		planet.radius = planetRadius;
+
 		Planet* p = new Planet(planet, orbit);
 		p->planetBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { orbit.x,orbit.y }, NULL, &(p->orbit), { 0.0f,0.0f }, { 0.0f,0.0f });
 		p->planetBody->mass = 1000.0f;
-		
+		p->planetBody->name.Create("planet");
+
 		p->orbitBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { orbit.x,orbit.y }, NULL, &(p->planet), { 0.0f,0.0f }, { 0.0f,0.0f });
 		p->orbitBody->mass = 1000.0f;
+		p->orbitBody->name.Create("orbit");
 
 		planets.add(p);
 		return p;
+	}
+	Meteor* AddMeteor(Collider& meteor)
+	{
+		Meteor* m = new Meteor(meteor);
+		Collider* rect = new Collider(meteor);
+
+		m->meteorBody = (StaticBody*)app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::UNDEFINED, { (float)(rect->r1.x),(float)(rect->r1.y) }, NULL, rect, { 0.0f,0.0f }, { 0.0f,0.0f });
+		m->meteorBody->mass = 1000.0f;
+		m->meteorBody->isCollidable = false;
+		m->meteorBody->name.Create("meteor");
+		meteors.add(m);
+		return m;
 	}
 };
 

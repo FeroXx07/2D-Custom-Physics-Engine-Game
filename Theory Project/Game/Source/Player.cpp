@@ -43,7 +43,11 @@ bool Player::Awake()
 // Called before the first frame
 bool Player::Start()
 {
-	img = app->tex->Load("Assets/textures/spaceship_spritesheet.png");
+
+	// img = app->tex->Load("Assets/textures/spaceship_spritesheet.png");
+
+	img = app->tex->Load("Assets/textures/SpaceshipLittle2.png");
+
 
 	Collider* theSquareColl = new Collider({ 0,0,10,10 });
 	playerBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, { 120,20 }, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });
