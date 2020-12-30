@@ -89,6 +89,8 @@ bool Audio::PlayMusic(const char* path, float fade_time)
 {
 	bool ret = true;
 
+	timerActive = false;
+
 	if(!active)
 		return false;
 
@@ -133,6 +135,58 @@ bool Audio::PlayMusic(const char* path, float fade_time)
 			}
 		}
 	}
+
+	LOG("Successfully playing %s", path);
+	return ret;
+}
+
+bool Audio::PlayMusicInterpolate(const char* path, float timeToStart, int songDurationSec, int songIndex)
+{
+	bool ret = true;
+
+	if (!active)
+		return false;
+
+	if (timerActive == true)
+	{
+		timeToStart = (float)musicTimer.ReadSec();
+		timerActive = false;
+	}
+
+	if (timeToStart > songDurationSec)
+	{
+		float loops = timeToStart / songDurationSec;
+
+		timeToStart = timeToStart - songDurationSec * floor(loops);
+	}
+
+	//IF ALREADY MUSIC, STOP & FREE
+	if (music != NULL)
+	{
+		Mix_HaltMusic();
+		Mix_FreeMusic(music);
+	}
+
+	//LOAD MUSIC
+	music = Mix_LoadMUS(path);
+
+	//PLAY MUSIC
+	if (music == NULL)
+	{
+		LOG("Cannot load music %s. Mix_GetError(): %s\n", path, Mix_GetError());
+		ret = false;
+	}
+	else
+	{
+		if (Mix_FadeInMusicPos(music, -1, 0, timeToStart) < 0)
+		{
+			LOG("Cannot play in music %s. Mix_GetError(): %s", path, Mix_GetError());
+			ret = false;
+		}
+	}
+
+	musicTimer.Start();
+	timerActive = true;
 
 	LOG("Successfully playing %s", path);
 	return ret;

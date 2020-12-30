@@ -279,7 +279,7 @@ void Scene::SetMainMenu()
 	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
 	mainMenuArrow.selection = 1;
 
-	app->audio->PlayMusic("Assets/audio/Music/MAIN_MENU_MUSIC.ogg");
+	app->audio->PlayMusicInterpolate("Assets/audio/Music/MAIN_MENU_MUSIC.ogg", 0, 24, 1);
 
 	//LOAD IMAGE TITLE
 	//LOAD IMAGE PLAY
@@ -292,7 +292,7 @@ void Scene::SetLevelSelector()
 	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
 	levelSelectArrow.selection = 1;
 
-	app->audio->PlayMusic("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg");
+	app->audio->PlayMusicInterpolate("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg", 0, 24, 2);
 
 	//LOAD IMAGE LEVEL 1
 	//LOAD IMAGE LEVEL 2
@@ -305,6 +305,8 @@ void Scene::SetLevel1()
 	{
 		app->player->Enable();
 	}
+
+	app->audio->PlayMusic("Assets/audio/Music/LEVEL_SELECTOR_MUSI.ogg", 0);
 
 	/*Collider* groundColl = new Collider({ 0,0,1920,20 });
 	Body* groundBody = app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::GROUND, { 0,1060 }, NULL, groundColl, { 0.0f,0.0f }, { 0.0f,0.0f });

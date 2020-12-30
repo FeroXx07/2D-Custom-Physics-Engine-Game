@@ -10,7 +10,7 @@
 	
 Timer::Timer()
 {
-	Start();
+
 }
 
 void Timer::Start()
