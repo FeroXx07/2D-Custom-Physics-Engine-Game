@@ -101,6 +101,17 @@ bool Scene::CleanUp()
 	if (levelSelectBackground != nullptr && levelSelectBackground != NULL)
 		app->tex->UnLoad(levelSelectBackground);
 
+	if (pauseMenu != nullptr && pauseMenu != NULL)
+		app->tex->UnLoad(pauseMenu);
+
+	if (pauseMenuArrow.arrowTex != nullptr && pauseMenuArrow.arrowTex != NULL)
+		app->tex->UnLoad(pauseMenuArrow.arrowTex);
+
+	if (pauseMenuGradient != nullptr && pauseMenuGradient != NULL)
+		app->tex->UnLoad(pauseMenuGradient);
+
+	
+
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
@@ -155,52 +166,78 @@ void Scene::UpdateLevelSelector()
 
 void Scene::UpdateLevels()
 {
-	if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
-		SetScene(LEVEL_1);
+	if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN) SetPauseMenu();
 
-	app->player->onOrbit = false;
-
-	for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
+	if (!pause)
 	{
-		if (list->data == theVoid)
+		if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
+			SetScene(LEVEL_1);
+
+		app->player->onOrbit = false;
+
+		for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
 		{
-			if (app->player->playerBody->position.y + app->player->playerBody->collider->r1.h >= theVoid->planetBody->position.y)
-				SetScene(LEVEL_1);
-			continue;
+			if (list->data == theVoid)
+			{
+				if (app->player->playerBody->position.y + app->player->playerBody->collider->r1.h >= theVoid->planetBody->position.y)
+					SetScene(LEVEL_1);
+				continue;
+			}
+
+
+			CircleCollider currentPlanet = list->data->planet;
+			CircleCollider currentOrbit = list->data->orbit;
+
+			if (app->player->onOrbit = app->player->playerBody->collider->CheckCollision(currentOrbit, app->player->playerBody->collider->r1))
+			{
+				// Collision with orbit
+				LOG("ORBIT!!!!");
+				float force = 55.0f;
+
+				fPoint directionGravity = fPoint({ currentPlanet.x,currentPlanet.y }) - app->player->playerBody->position;
+
+				float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+				directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+				directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+				app->player->playerBody->SetGravityAcceleration(directionGravity);
+				app->player->playerBody->coeficientAeroDrag = { 0.1f, 0.1f };
+			}
+
+			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
+			{
+				// Collision with PLANET
+				LOG("PLANET!!!!");
+			}
 		}
-
-
-		CircleCollider currentPlanet = list->data->planet;
-		CircleCollider currentOrbit = list->data->orbit;
-
-		if (app->player->onOrbit = app->player->playerBody->collider->CheckCollision(currentOrbit, app->player->playerBody->collider->r1))
-		{
-			// Collision with orbit
-			LOG("ORBIT!!!!");
-			float force = 55.0f;
-
-			fPoint directionGravity = fPoint({ currentPlanet.x,currentPlanet.y }) - app->player->playerBody->position;
-
-			float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
-
-			directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
-			directionGravity = { directionGravity.x * force, directionGravity.y * force };
-
-			app->player->playerBody->SetGravityAcceleration(directionGravity);
-			app->player->playerBody->coeficientAeroDrag = { 0.1f, 0.1f };
-		}
-
-		if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
-		{
-			// Collision with PLANET
-			LOG("PLANET!!!!");
-		}
+	}
+	else
+	{
+		UpdatePauseMenu();
 	}
 }
 
 void Scene::UpdatePauseMenu()
 {
-	//Update Pause Menu
+	app->render->DrawTexture(pauseMenuGradient, 0, 0);
+
+	app->render->DrawTexture(pauseMenu, 340, 760);
+
+	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y);
+
+	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+	{
+		pause = false;
+		app->physics->Enable();
+
+		if (pauseMenuArrow.selection == 2) SetScene(LEVEL_SELECTOR);
+		else if (pauseMenuArrow.selection == 3) SetScene(MAIN_MENU);
+	}
+
+	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && pauseMenuArrow.selection != 1) pauseMenuArrow.selection--;
+
+	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && pauseMenuArrow.selection != 3) pauseMenuArrow.selection++;
 }
 
 
@@ -217,7 +254,6 @@ void Scene::SetScene(SceneType changeScene)
 	else if (scene == LEVEL_1) SetLevel1();
 	else if (scene == LEVEL_2) SetLevel2();
 	else if (scene == LEVEL_3) SetLevel3();
-	else if (scene == PAUSE_MENU) SetPauseMenu();
 
 }
 
@@ -318,7 +354,16 @@ void Scene::SetLevel3()
 
 void Scene::SetPauseMenu()
 {
-	// LOAD IMAGE BACKGROUND
+	pause = true;
+	app->physics->Disable();
+
+	pauseMenu = app->tex->Load("Assets/textures/Menu.png");
+	pauseMenuGradient = app->tex->Load("Assets/textures/MENU_GRADIENT.png");
+
+	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	pauseMenuArrow.selection = 1;
+
+
 	// LOAD IMAGE EXTRAS (Ship images, fire images, logo image...) [Optional]
 	// LOAD IMAGE OPTIONS
 		// RETURN MAIN MENU

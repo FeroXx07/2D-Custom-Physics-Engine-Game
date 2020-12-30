@@ -48,6 +48,14 @@ struct LSSelectorArrow
 	uint selection;
 };
 
+struct PMSelectorArrow
+{
+	PMSelectorArrow() : position{ { -300, 0 }, {260,733}, {260, 772}, {260, 810} } {}
+	SDL_Texture* arrowTex;
+	const iPoint position[4]; //position[0] == OUT OF WINDOW // position[1] == BACK TO GAME // position[2] == BACK TO LVL SELECT // position[3] == BACK TO MAIN MENU
+	uint selection;
+};
+
 class Scene : public Module
 {
 public:
@@ -85,6 +93,7 @@ public:
 private:
 
 	bool skip = false;
+	bool pause = false;
 	SceneType scene;
 
 	void UpdateMainMenu();
@@ -103,9 +112,12 @@ private:
 	SDL_Texture* img;
 	SDL_Texture* mainMenuBackground;
 	SDL_Texture* levelSelectBackground;
+	SDL_Texture* pauseMenu;
+	SDL_Texture* pauseMenuGradient;
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
+	PMSelectorArrow pauseMenuArrow;
 
 public:
 	List<Planet*> planets;
