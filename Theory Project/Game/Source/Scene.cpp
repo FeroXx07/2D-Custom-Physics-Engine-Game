@@ -164,6 +164,7 @@ void Scene::UpdateLevelSelector()
 		if (levelSelectArrow.selection == 1) SetScene(LEVEL_1);
 		else if (levelSelectArrow.selection == 2) SetScene(LEVEL_2);
 		else if (levelSelectArrow.selection == 3) SetScene(LEVEL_3);
+		else if (levelSelectArrow.selection == 4) SetScene(MAIN_MENU);
 	}
 
 	if (app->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && levelSelectArrow.selection != 1 && levelSelectArrow.selection != 4) levelSelectArrow.selection--;
@@ -177,7 +178,10 @@ void Scene::UpdateLevelSelector()
 
 void Scene::UpdateLevels()
 {
-	if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && pause == false) SetPauseMenu();
+	if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && pause == false)
+	{
+		SetPauseMenu();
+	}
 
 	if (!pause)
 	{
@@ -245,11 +249,6 @@ void Scene::UpdatePauseMenu()
 		else if (pauseMenuArrow.selection == 2) SetScene(LEVEL_SELECTOR);
 		else if (pauseMenuArrow.selection == 3) SetScene(MAIN_MENU);
 	}
-	/*else if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN)
-	{
-		pause = false;
-		scene = currentScene;
-	}*/
 
 	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && pauseMenuArrow.selection != 1) pauseMenuArrow.selection--;
 

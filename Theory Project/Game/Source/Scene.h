@@ -94,6 +94,7 @@ private:
 
 	bool skip = false;
 	bool pause = false;
+
 	SceneType scene;
 	SceneType currentScene;
 
