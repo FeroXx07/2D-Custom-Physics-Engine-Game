@@ -179,7 +179,7 @@ public:
 private:
 	// Debug 
 	void DebugDraw();
-	bool debug = true;
+	bool debug = false;
 
 	// TODO:
 	/*

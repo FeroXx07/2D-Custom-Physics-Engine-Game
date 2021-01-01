@@ -50,6 +50,7 @@ public:
 
 public:
 	Animation spaceshipAnim;
+	CircleCollider* previousOrbitCollider = nullptr;
 
 };
 

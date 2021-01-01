@@ -48,8 +48,7 @@ bool Player::Start()
 
 	img = app->tex->Load("Assets/textures/SpaceshipLittle2.png");
 
-
-	Collider* theSquareColl = new Collider({ 0,0,10,10 });
+	Collider* theSquareColl = new Collider({ 0,0,20,5 });
 	playerBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::PLAYER, { 120,20 }, NULL, theSquareColl, { 0.0f,0.0f }, { 0.0f,0.0f });
 	playerBody->mass = 10;
 	playerBody->coeficientRestitution = { 1.0f,0.8f };
@@ -137,7 +136,7 @@ bool Player::PostUpdate()
 {
 	bool ret = true;
 
-	app->render->DrawTexture(img, METERS_TO_PIXELS(playerBody->position.x), METERS_TO_PIXELS(playerBody->position.y), NULL, 0.0f, (playerBody->rotation));
+	app->render->DrawTexture(img, METERS_TO_PIXELS(playerBody->position.x) - 10, METERS_TO_PIXELS(playerBody->position.y) - 2, NULL, 0.0f, (playerBody->rotation));
 	return ret;
 }
 

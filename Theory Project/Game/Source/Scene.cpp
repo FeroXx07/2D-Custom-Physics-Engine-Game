@@ -18,6 +18,22 @@
 Scene::Scene() : Module()
 {
 	name.Create("scene");
+
+	arrowAnim.PushBack({ 0,42,179,135 });// 1
+	arrowAnim.PushBack({ 220,42,179,135 });// 2
+	arrowAnim.PushBack({ 442,42,179,135 });// 3
+	arrowAnim.PushBack({ 663,42,179,135 });// 4
+	arrowAnim.PushBack({ 884,42,179,135 });// 5
+	arrowAnim.PushBack({ 1105,42,179,135 });// 6
+	arrowAnim.PushBack({ 1328,42,179,135 });// 7
+	arrowAnim.PushBack({ 1105,42,179,135 });// 6
+	arrowAnim.PushBack({ 884,42,179,135 });// 5
+	arrowAnim.PushBack({ 663,42,179,135 });// 4
+	arrowAnim.PushBack({ 442,42,179,135 });// 3
+	arrowAnim.PushBack({ 220,42,179,135 });// 2
+
+	arrowAnim.loop = true;
+	arrowAnim.speed = 0.2f;
 }
 
 // Destructor
@@ -146,42 +162,71 @@ bool Scene::CleanUp()
 
 void Scene::UpdateMainMenu()
 {
+	arrowAnim.Update();
+
 	app->render->DrawTexture(mainMenuBackground, 0, 0);
 
-	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y);
+	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
+		app->audio->PlayFx(SFxSelectOption);
 		if (mainMenuArrow.selection == 1) SetScene(LEVEL_SELECTOR);
 		else if (mainMenuArrow.selection == 2) skip = true;
 	}
 
-	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && mainMenuArrow.selection == 2) mainMenuArrow.selection = 1;
-
-	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && mainMenuArrow.selection == 1) mainMenuArrow.selection = 2;
+	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && mainMenuArrow.selection == 2)
+	{
+		app->audio->PlayFx(SFxChangeOption);
+		mainMenuArrow.selection = 1;
+	}
+	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && mainMenuArrow.selection == 1)
+	{
+		app->audio->PlayFx(SFxChangeOption);
+		mainMenuArrow.selection = 2;
+	}
 }
 
 void Scene::UpdateLevelSelector()
 {
+	arrowAnim.Update();
+
 	app->render->DrawTexture(levelSelectBackground, 0, 0);
 
-	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y);
+	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
+		app->audio->PlayFx(SFxSelectOption);
 		if (levelSelectArrow.selection == 1) SetScene(LEVEL_1);
 		else if (levelSelectArrow.selection == 2) SetScene(LEVEL_2);
 		else if (levelSelectArrow.selection == 3) SetScene(LEVEL_3);
 		else if (levelSelectArrow.selection == 4) SetScene(MAIN_MENU);
 	}
 
-	if (app->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && levelSelectArrow.selection != 1 && levelSelectArrow.selection != 4) levelSelectArrow.selection--;
+	if (app->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN && levelSelectArrow.selection != 1 && levelSelectArrow.selection != 4)
+	{
+		levelSelectArrow.selection--;
+		app->audio->PlayFx(SFxChangeOption);
+	}
 
-	if (app->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN && levelSelectArrow.selection != 3 && levelSelectArrow.selection != 4) levelSelectArrow.selection++;
+	if (app->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN && levelSelectArrow.selection != 3 && levelSelectArrow.selection != 4)
+	{
+		levelSelectArrow.selection++;
+		app->audio->PlayFx(SFxChangeOption);
+	}
 
-	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && levelSelectArrow.selection == 4) levelSelectArrow.selection = 1;
+	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && levelSelectArrow.selection == 4)
+	{
+		levelSelectArrow.selection = 1;
+		app->audio->PlayFx(SFxChangeOption);
+	}
 
-	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && levelSelectArrow.selection != 4) levelSelectArrow.selection = 4;
+	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && levelSelectArrow.selection != 4)
+	{
+		levelSelectArrow.selection = 4;
+		app->audio->PlayFx(SFxChangeOption);
+	}
 }
 
 void Scene::UpdateLevels()
@@ -194,27 +239,61 @@ void Scene::UpdateLevels()
 		SetPauseMenu();
 	}
 
+	// Update game
 	if (!pause)
 	{
 		if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
-			SetScene(LEVEL_1);
+			SetScene(GetScene());
 
 		app->player->onOrbit = false;
 
 		for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
 		{
+			// Check if reached loose condition
 			if (list->data == theVoid)
 			{
 				if (app->player->playerBody->position.y >= theVoid->planetBody->position.y)
-					SetScene(LEVEL_1);
+				{
+					app->audio->PlayFx(SFxDestroyed);
+					SetScene(GetScene());
+				}
 				continue;
+			}
+
+			// Check if reached win condition
+			if (list->data == theRing)
+			{
+				if (app->player->playerBody->collider->CheckCollision(list->data->planet, app->player->playerBody->collider->r1))
+				{
+					// Collision with RING
+					switch (GetScene())
+					{
+					case LEVEL_1:
+						SetScene(LEVEL_2);
+						break;
+					case LEVEL_2:
+						SetScene(LEVEL_3);
+						break;
+					case LEVEL_3:
+						SetScene(MAIN_MENU);
+						break;
+					default:
+						break;
+					}
+				}
 			}
 
 			CircleCollider currentPlanet = list->data->planet;
 			CircleCollider currentOrbit = list->data->orbit;
 
+			// Check collisions with planets
 			if (app->player->onOrbit = app->player->playerBody->collider->CheckCollision(currentOrbit, app->player->playerBody->collider->r1))
 			{
+				if (app->player->previousOrbitCollider != &list->data->orbit)
+				{
+					app->audio->PlayFx(SFxOrbitEnter);
+					app->player->previousOrbitCollider = &list->data->orbit;
+				}
 				// Collision with orbit
 				LOG("ORBIT!!!!");
 				float force = 55.0f;
@@ -233,18 +312,22 @@ void Scene::UpdateLevels()
 			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
 			{
 				// Collision with PLANET
+				app->audio->PlayFx(SFxDestroyed);
 				LOG("PLANET!!!!");
 			}
 		}
 
+		// Draw & Check Collisions with meteors
 		for (ListItem<Meteor*>* listMeteors = meteors.start; listMeteors; listMeteors = listMeteors->next)
 		{
 			SDL_Rect toDraw = { 0,0, listMeteors->data->colliderRect.r1.w, listMeteors->data->colliderRect.r1.h };
-			app->render->DrawTexture(meteorTexture, listMeteors->data->colliderRect.r1.x, listMeteors->data->colliderRect.r1.y, &toDraw);
+		
+			app->render->DrawTexture(meteorTexture, listMeteors->data->meteorBody->position.x, listMeteors->data->meteorBody->position.y, &toDraw);
 
 			if (listMeteors->data->colliderRect.CheckCollision(listMeteors->data->colliderRect.r1, app->player->playerBody->collider->r1))
 			{
-				SetScene(LEVEL_1);
+				app->audio->PlayFx(SFxDestroyed);
+				SetScene(GetScene());
 			}
 		}
 	}
@@ -297,11 +380,12 @@ void Scene::SetMainMenu()
 {
 	mainMenuBackground = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
 
-	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	mainMenuArrow.selection = 1;
 
 	app->audio->PlayMusicInterpolate("Assets/audio/Music/MAIN_MENU_MUSIC.ogg", 0, 24, 1);
-
+	SFxChangeOption = app->audio->LoadFx("Assets/audio/fx/CHANGE_OPTION_FX.wav");
+	SFxSelectOption = app->audio->LoadFx("Assets/audio/fx/SELECT_OPTION_FX.wav");
 	//LOAD IMAGE TITLE
 	//LOAD IMAGE PLAY
 }
@@ -310,11 +394,12 @@ void Scene::SetLevelSelector()
 {
 	levelSelectBackground = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
 
-	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	levelSelectArrow.selection = 1;
 
 	app->audio->PlayMusicInterpolate("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg", 0, 24, 2);
-
+	SFxChangeOption = app->audio->LoadFx("Assets/audio/fx/CHANGE_OPTION_FX.wav");
+	SFxSelectOption = app->audio->LoadFx("Assets/audio/fx/SELECT_OPTION_FX.wav");
 	//LOAD IMAGE LEVEL 1
 	//LOAD IMAGE LEVEL 2
 	//LOAD IMAGE LEVEL 3
@@ -330,7 +415,9 @@ void Scene::SetLevel1()
 	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 
-	app->audio->PlayMusic("Assets/audio/Music/LEVEL_SELECTOR_MUSI.ogg", 0);
+	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
+	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
+	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
 
 	AddPlanet(CircleCollider(150, 150, 100), 10);
 	AddPlanet(CircleCollider(150, 500, 100), 10);
@@ -353,37 +440,14 @@ void Scene::SetLevel1()
 
 	AddMeteor(Collider({ 1500,280,400,20 }));
 
-	/*AddPlanet(CircleCollider(600, 600, 100), 20);
-	AddPlanet(CircleCollider(900, 300, 100), 20);
-	AddPlanet(CircleCollider(1400, 600, 100), 20);*/
-
 	theVoid = AddPlanet(CircleCollider(1920 / 2, 1500, 800), 600);
+
+	theRing = AddPlanet(CircleCollider(1700, 120, 100), 80);
 
 	app->player->theVoidPos = theVoid->planetBody->position;
 
 	app->player->playerBody->position = { 120, 20 };
 	app->player->playerBody->velocity = { 0, 0 };
-
-	//Set Planet/Orbit Gravity
-
-	//ListItem<Planet*>* list;
-	//for (list = planets.start; list != NULL; list = list->next)
-	//{
-	//	if (list->data == theVoid)
-	//		continue;
-
-	//	float force = 1.0f;
-
-	//	fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
-
-	//	float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
-
-	//	directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
-	//	directionGravity = { directionGravity.x * force, directionGravity.y * force };
-
-	//	list->data->planetBody->SetGravityAcceleration(directionGravity); //WRONG
-	//	list->data->orbitBody->SetGravityAcceleration(directionGravity);
-	//}
 
 	// To adjust colliders to their correct positions, only once in the start
 	app->physics->Step(1.0f / 60.0f);
@@ -392,11 +456,109 @@ void Scene::SetLevel1()
 void Scene::SetLevel2()
 {
 	// SET LEVEL 2, VOID APPEARS
+
+	if (app->player->IsEnabled() == false)
+	{
+		app->player->Enable();
+	}
+
+	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
+	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
+
+	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
+	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
+	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
+
+	AddPlanet(CircleCollider(150, 150, 80), 10);
+	AddPlanet(CircleCollider(450, 0, 80), 10);
+	AddPlanet(CircleCollider(250, 500, 80), 10);
+
+	AddMeteor(Collider({ 450, 150, 20, 220 }));
+	AddMeteor(Collider({ 450, 600, 20, 220 }));
+
+	AddPlanet(CircleCollider(700, 200, 80), 10);
+	AddPlanet(CircleCollider(700, 450, 80), 10);
+
+	AddMeteor(Collider({ 700, 0, 20, 50 }));
+	AddMeteor(Collider({ 800, 300, 220, 20 }));
+
+	AddPlanet(CircleCollider(1000, 0, 80), 10);
+	AddPlanet(CircleCollider(1000, 700, 80), 10);
+
+	AddPlanet(CircleCollider(1300, 400, 80), 10);
+	AddPlanet(CircleCollider(1400, 50, 80), 5);
+
+	AddMeteor(Collider({ 1200, 0, 100, 20 }));
+	AddMeteor(Collider({ 1280, 50, 20, 125 }));
+
+	AddMeteor(Collider({ 1600, 150, 20, 500 }));
+
+	theVoid = AddPlanet(CircleCollider(1920 / 2, 1500, 800), 600);
+
+	theRing = AddPlanet(CircleCollider(1800, 120, 100), 80);
+
+	app->player->theVoidPos = theVoid->planetBody->position;
+
+	app->player->playerBody->position = { 120, 20 };
+	app->player->playerBody->velocity = { 0, 0 };
+
+	//Set Planet/Orbit Gravity
+	ListItem<Planet*>* list;
+	for (list = planets.start; list != NULL; list = list->next)
+	{
+		if (list->data == theVoid)
+			continue;
+
+		float force = 1.0f;
+
+		fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
+
+		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+		list->data->planetBody->SetGravityAcceleration(directionGravity); //WRONG
+		list->data->orbitBody->SetGravityAcceleration(directionGravity);	
+	}
+
+	//Set Meteors Gravity
+	ListItem<Meteor*>* list2;
+	for (list2 = meteors.start; list2 != NULL; list2 = list2->next)
+	{
+		float force = 1.0f;
+
+		fPoint directionGravity = theVoid->planetBody->position - list2->data->meteorBody->position;
+
+		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+		list2->data->meteorBody->SetGravityAcceleration(directionGravity); 
+	}
+
+	// To adjust colliders to their correct positions, only once in the start
+	app->physics->Step(1.0f / 60.0f);
 }
 
 void Scene::SetLevel3()
 {
 	// SET LEVEL 3, VOID APPEARS FASTLY
+	if (app->player->IsEnabled() == false)
+	{
+		app->player->Enable();
+	}
+
+	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
+	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
+
+	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
+	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
+	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
+
+	// To adjust colliders to their correct positions, only once in the start
+	app->physics->Step(1.0f / 60.0f);
 }
 
 void Scene::SetPauseMenu()

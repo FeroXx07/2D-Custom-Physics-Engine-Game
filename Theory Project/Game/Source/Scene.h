@@ -4,6 +4,7 @@
 #include "Module.h"
 #include "Physics.h"
 #include "List.h"
+#include "Animation.h"
 
 struct SDL_Texture;
 
@@ -36,7 +37,7 @@ struct Meteor
 {
 public:
 	Meteor(Collider& meteor_) : colliderRect(meteor_) {}
-	StaticBody* meteorBody = nullptr;
+	DynamicBody* meteorBody = nullptr;
 	Collider colliderRect;
 };
 
@@ -130,12 +131,20 @@ private:
 	LSSelectorArrow levelSelectArrow;
 	PMSelectorArrow pauseMenuArrow;
 
+	Animation arrowAnim;
+
+	uint SFxOrbitEnter;
+	uint SFxDestroyed;
+
+	uint SFxSelectOption;
+	uint SFxChangeOption;
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;
 	List<Meteor*> meteors;
 
 	Planet* theVoid = nullptr;
+	Planet* theRing = nullptr;
 	Planet* AddPlanet(CircleCollider& orbit, int planetRadius)
 	{
 		CircleCollider planet = orbit;
@@ -158,8 +167,8 @@ public:
 		Meteor* m = new Meteor(meteor);
 		Collider* rect = new Collider(meteor);
 
-		m->meteorBody = (StaticBody*)app->physics->CreateBody(BodyType::STATIC_BODY, ColliderType::UNDEFINED, { (float)(rect->r1.x),(float)(rect->r1.y) }, NULL, rect, { 0.0f,0.0f }, { 0.0f,0.0f });
-		m->meteorBody->mass = 1000.0f;
+		m->meteorBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { (float)(rect->r1.x),(float)(rect->r1.y) }, NULL, rect, { 0.0f,0.0f }, { 0.0f,0.0f });
+		m->meteorBody->mass = 800.0f;
 		m->meteorBody->isCollidable = false;
 		m->meteorBody->name.Create("meteor");
 		meteors.add(m);
