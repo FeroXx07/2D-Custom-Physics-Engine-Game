@@ -174,6 +174,7 @@ void Physics::Draw(Body* body)
 			app->render->DrawRectangle({ METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h) }, 123, 104, 238);
 			break;
 		default:
+			app->render->DrawRectangle({ METERS_TO_PIXELS(body->collider->r1.x),METERS_TO_PIXELS(body->collider->r1.y),METERS_TO_PIXELS(body->collider->r1.w),METERS_TO_PIXELS(body->collider->r1.h) }, 139, 69, 19);
 			break;
 		}
 		// TODO: CONVERT TO PIXELS
@@ -331,7 +332,7 @@ void Body::SolveCollision(Body &body)
 
 void Body::DeClipper(Body &body)
 {
-	if (this->bodyType == DYNAMIC_BODY)
+	if (this->bodyType == DYNAMIC_BODY && body.isCollidable == true)
 	{
 		DynamicBody* currentBody = (DynamicBody*)this;
 

@@ -10,10 +10,9 @@ struct SDL_Rect;
 struct CircleCollider
 {
 public:
-	CircleCollider(float x_, float y_, float radius_, SString name_ = nullptr) : x(x_),y(y_),radius(radius_),name(name_){}
+	CircleCollider(float x_, float y_, float radius_) : x(x_),y(y_),radius(radius_){}
 	float x = 0.0f, y = 0.0f;
 	float radius = 0.0f;
-	SString name;
 
 	double distance(int x1, int y1, int x2, int y2)
 	{

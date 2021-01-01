@@ -86,6 +86,7 @@ public:
 	fPoint position;
 	float rotation; 
 	uint mass;
+	bool isCollidable = true;
 };
 
 class StaticBody : public Body
