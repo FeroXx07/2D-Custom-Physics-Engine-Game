@@ -131,6 +131,7 @@ private:
 	SDL_Texture* theVoidTexture;
 	SDL_Texture* levelSelectionSpritesheet;
 	SDL_Texture* mainMenuSpritesheet;
+	SDL_Texture* mainMenuTitle;
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
@@ -139,6 +140,7 @@ private:
 	Animation arrowAnim;
 	Animation playAnim;
 	Animation quitAnim;
+	Animation titleAnim;
 	Animation theVoidAnim;
 
 	uint SFxOrbitEnter;

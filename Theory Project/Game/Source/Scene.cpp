@@ -67,6 +67,16 @@ Scene::Scene() : Module()
 	quitAnim.PushBack({ 764, 106, 550, 146 }); //1
 	quitAnim.loop = false;
 	quitAnim.speed = 0.3f;
+
+	//TITLE MAIN MENU ANIMATION
+	titleAnim.PushBack({ 0, 0, 550, 500 }); //1
+	titleAnim.PushBack({ 550, 0, 550, 500 }); //2
+	titleAnim.PushBack({ 1101, 0, 550, 500 }); //3
+	titleAnim.PushBack({ 1651, 0, 550, 500 }); //4
+	titleAnim.PushBack({ 2202, 0, 550, 500 }); //5
+	titleAnim.PushBack({ 2752, 0, 550, 500 }); //6
+	titleAnim.loop = false;
+	titleAnim.speed = 0.6f;
 }
 
 // Destructor
@@ -174,6 +184,9 @@ bool Scene::CleanUp()
 	if (mainMenuSpritesheet != nullptr && mainMenuSpritesheet != NULL)
 		app->tex->UnLoad(mainMenuSpritesheet);
 
+	if (mainMenuTitle != nullptr && mainMenuTitle != NULL)
+		app->tex->UnLoad(mainMenuTitle);
+
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
@@ -204,6 +217,9 @@ void Scene::UpdateMainMenu()
 	arrowAnim.Update();
 
 	app->render->DrawTexture(mainMenuBackgroundTex, 0, 0);
+
+	app->render->DrawTexture(mainMenuTitle, 0, 100, &titleAnim.GetCurrentFrame());
+	titleAnim.Update();
 
 	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
@@ -500,6 +516,9 @@ void Scene::SetMainMenu()
 	mainMenuBackgroundTex = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
 
 	mainMenuSpritesheet = app->tex->Load("Assets/textures/title_options.png");
+
+	mainMenuTitle = app->tex->Load("Assets/textures/logo_screen.png");
+	titleAnim.Reset();
 
 	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	mainMenuArrow.selection = 1;
