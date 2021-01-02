@@ -108,6 +108,38 @@ Scene::Scene() : Module()
 	selectLvl3Anim.loop = false;
 	selectLvl3Anim.speed = 0.3f;
 
+	//Level Selector PAUSE MENU ANIMATION
+	pauseLS.PushBack({ 0, 314, 320, 72 }); //1
+	pauseLS.PushBack({ 0, 386, 320, 72 }); //2
+	pauseLS.PushBack({ 0, 458, 320, 72 }); //3
+	pauseLS.PushBack({ 0, 531, 320, 72 }); //4
+	pauseLS.PushBack({ 0, 602, 320, 72 }); //5
+	pauseLS.PushBack({ 0, 674, 320, 72 }); //6
+	pauseLS.PushBack({ 0, 314, 320, 72 }); //1
+	pauseLS.loop = false;
+	pauseLS.speed = 0.3f;
+
+	//Resume PAUSE MENU ANIMATION
+	pauseResume.PushBack({ 320, 314, 206, 72 }); //1
+	pauseResume.PushBack({ 320, 386, 206, 72 }); //2
+	pauseResume.PushBack({ 320, 458, 206, 72 }); //3
+	pauseResume.PushBack({ 320, 531, 206, 72 }); //4
+	pauseResume.PushBack({ 320, 602, 206, 72 }); //5
+	pauseResume.PushBack({ 320, 674, 206, 72 }); //6
+	pauseResume.PushBack({ 320, 314, 206, 72 }); //1
+	pauseResume.loop = false;
+	pauseResume.speed = 0.3f;
+
+	//Menu PAUSE MENU ANIMATION
+	pauseMM.PushBack({ 527, 314, 126, 72 }); //1
+	pauseMM.PushBack({ 527, 386, 126, 72 }); //2
+	pauseMM.PushBack({ 527, 458, 126, 72 }); //3
+	pauseMM.PushBack({ 527, 531, 126, 72 }); //4
+	pauseMM.PushBack({ 527, 602, 126, 72 }); //5
+	pauseMM.PushBack({ 527, 314, 126, 72 }); //1
+	pauseMM.loop = false;
+	pauseMM.speed = 0.3f;
+
 
 }
 
@@ -548,7 +580,7 @@ void Scene::UpdatePauseMenu()
 {
 	app->render->DrawTexture(pauseMenuGradientTex, 0, 0);
 
-	app->render->DrawTexture(pauseMenuTex, 340, 760);
+	app->render->DrawTexture(pauseMenuTex, 667, 383, &pauseRect);
 
 	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y);
 
@@ -564,6 +596,29 @@ void Scene::UpdatePauseMenu()
 	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && pauseMenuArrow.selection != 1) pauseMenuArrow.selection--;
 
 	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && pauseMenuArrow.selection != 3) pauseMenuArrow.selection++;
+
+	if (pauseMenuArrow.selection == 1)
+	{
+		pauseResume.Update();
+		pauseLS.Reset();
+		pauseMM.Reset();
+	}
+	else if (pauseMenuArrow.selection == 2)
+	{
+		pauseLS.Update();
+		pauseResume.Reset();
+		pauseMM.Reset();
+	}
+	else if (pauseMenuArrow.selection == 3)
+	{
+		pauseMM.Update();
+		pauseResume.Reset();
+		pauseLS.Reset();
+	}
+
+	app->render->DrawTexture(pauseMenuTex, 856, 461 + 15, &pauseResume.GetCurrentFrame());
+	app->render->DrawTexture(pauseMenuTex, 800, 540, &pauseLS.GetCurrentFrame());
+	app->render->DrawTexture(pauseMenuTex, 897, 618 - 2, &pauseMM.GetCurrentFrame());
 }
 
 
@@ -859,7 +914,7 @@ void Scene::SetPauseMenu()
 	scene = PAUSE_MENU;
 	
 
-	pauseMenuTex = app->tex->Load("Assets/textures/Menu.png");
+	pauseMenuTex = app->tex->Load("Assets/textures/pause_menu.png");
 	pauseMenuGradientTex = app->tex->Load("Assets/textures/MENU_GRADIENT.png");
 
 	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
