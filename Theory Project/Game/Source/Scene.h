@@ -150,7 +150,9 @@ private:
 	uint SFxChangeOption;
 
 	float counterSpawn;
+	float winCounter;
 	CircleCollider listRandom[5];
+	int previousRandom;
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;

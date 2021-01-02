@@ -218,7 +218,7 @@ void Scene::UpdateMainMenu()
 
 	app->render->DrawTexture(mainMenuBackgroundTex, 0, 0);
 
-	app->render->DrawTexture(mainMenuTitle, 0, 100, &titleAnim.GetCurrentFrame());
+	app->render->DrawTexture(mainMenuTitle, 690, 100, &titleAnim.GetCurrentFrame());
 	titleAnim.Update();
 
 	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
@@ -317,12 +317,24 @@ void Scene::UpdateLevels()
 
 		if (GetScene() == LEVEL_3)
 		{
+			winCounter += 1.0 / 60.0f;
 			counterSpawn += 1.0 / 60.0f;
-			if (counterSpawn >= 3.0f)
+
+			if (winCounter >= 30.0f)
+			{
+				SetScene(MAIN_MENU);
+			}
+
+			if (counterSpawn >= 2.0f)
 			{
 				counterSpawn = 0.0f;
 				int random = rand() % 5;
-				AddPlanet(listRandom[random], 10);
+				if (previousRandom != random)
+				{
+					previousRandom = random;
+					AddPlanet(listRandom[random], 10);
+				}
+				
 
 				ListItem<Planet*>* list;
 				for (list = planets.start; list != NULL; list = list->next)
@@ -330,14 +342,14 @@ void Scene::UpdateLevels()
 					if (list->data == theVoid)
 						continue;
 
-					float force = 1.5f;
+					float multipliyer = 2.5f;
 
 					fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
 
 					float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
 
 					directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
-					directionGravity = { directionGravity.x * force, directionGravity.y * force };
+					directionGravity = { directionGravity.x * multipliyer, directionGravity.y * multipliyer };
 
 					list->data->planetBody->SetGravityAcceleration(directionGravity); 
 					list->data->orbitBody->SetGravityAcceleration(directionGravity);
@@ -762,11 +774,14 @@ void Scene::SetLevel3()
 	}
 
 	// To adjust colliders to their correct positions, only once in the start
-	listRandom[0] = CircleCollider(150, 0, 100);
-	listRandom[1] = CircleCollider(540, 0, 100);
-	listRandom[2] = CircleCollider(800, 0, 100);
-	listRandom[3] = CircleCollider(1100, 0, 100);
-	listRandom[4] = CircleCollider(1600, 0, 100);
+	listRandom[0] = CircleCollider(150, -100, 100);
+	listRandom[1] = CircleCollider(540, -100, 100);
+	listRandom[2] = CircleCollider(800, -100, 100);
+	listRandom[3] = CircleCollider(1100, -100, 100);
+	listRandom[4] = CircleCollider(1600, -100, 100);
+
+	counterSpawn = 0.0f;
+	winCounter = 0.0f;
 
 	app->physics->Step(1.0f / 60.0f);
 }
