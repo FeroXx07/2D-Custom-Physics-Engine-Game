@@ -136,7 +136,6 @@ bool Player::PostUpdate()
 {
 	bool ret = true;
 
-	app->render->DrawTexture(img, METERS_TO_PIXELS(playerBody->position.x) - 10, METERS_TO_PIXELS(playerBody->position.y) - 2, NULL, 0.0f, (playerBody->rotation));
 	return ret;
 }
 

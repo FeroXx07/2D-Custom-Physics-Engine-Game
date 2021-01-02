@@ -120,18 +120,23 @@ private:
 	void SetPauseMenu();
 
 private:
-	SDL_Texture* mainMenuBackground;
-	SDL_Texture* levelSelectBackground;
-	SDL_Texture* pauseMenu;
-	SDL_Texture* pauseMenuGradient;
-	SDL_Texture* levelsBackground;
+	SDL_Texture* mainMenuBackgroundTex;
+	SDL_Texture* levelSelectBackgroundTex;
+	SDL_Texture* pauseMenuTex;
+	SDL_Texture* pauseMenuGradientTex;
+	SDL_Texture* levelsBackgroundTex;
 	SDL_Texture* meteorTexture;
+	SDL_Texture* rockPlanetTexture;
+	SDL_Texture* orbitTexture;
+	SDL_Texture* theVoidTexture;
+	SDL_Texture* levelSelectionSpritesheet;
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
 	PMSelectorArrow pauseMenuArrow;
 
 	Animation arrowAnim;
+	Animation theVoidAnim;
 
 	uint SFxOrbitEnter;
 	uint SFxDestroyed;

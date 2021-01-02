@@ -31,9 +31,15 @@ Scene::Scene() : Module()
 	arrowAnim.PushBack({ 663,42,179,135 });// 4
 	arrowAnim.PushBack({ 442,42,179,135 });// 3
 	arrowAnim.PushBack({ 220,42,179,135 });// 2
-
 	arrowAnim.loop = true;
 	arrowAnim.speed = 0.2f;
+
+	theVoidAnim.PushBack({ 0,0,794,285 });
+	theVoidAnim.PushBack({ 823,0,802,285 });
+	theVoidAnim.PushBack({ 1678,0,792,285 });
+	theVoidAnim.PushBack({ 823,0,802,285 });
+	theVoidAnim.loop = true;
+	theVoidAnim.speed = 0.1f;
 }
 
 // Destructor
@@ -89,15 +95,6 @@ bool Scene::PostUpdate()
 {
 	bool ret = true;
 
-	for (ListItem<Planet*>* list = planets.start; list; list = list->next)
-	{
-		CircleCollider currentPlanet = list->data->planet;
-		CircleCollider currentOrbit = list->data->orbit;
-
-		app->render->DrawCircle(METERS_TO_PIXELS(currentPlanet.x), METERS_TO_PIXELS(currentPlanet.y), currentPlanet.radius, 123, 104, 238);
-		app->render->DrawCircle(METERS_TO_PIXELS(currentOrbit.x), METERS_TO_PIXELS(currentOrbit.y), currentOrbit.radius, 0, 191, 255);
-	}
-
 	if(app->input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN) ret = false;
 	if (skip == true) ret = false;
 
@@ -111,11 +108,11 @@ bool Scene::CleanUp()
 	if (meteorTexture != nullptr && meteorTexture != NULL)
 		app->tex->UnLoad(meteorTexture);
 
-	if (levelsBackground != nullptr && levelsBackground != NULL)
-		app->tex->UnLoad(levelsBackground);
+	if (levelsBackgroundTex != nullptr && levelsBackgroundTex != NULL)
+		app->tex->UnLoad(levelsBackgroundTex);
 
-	if (mainMenuBackground != nullptr && mainMenuBackground != NULL)
-		app->tex->UnLoad(mainMenuBackground);
+	if (mainMenuBackgroundTex != nullptr && mainMenuBackgroundTex != NULL)
+		app->tex->UnLoad(mainMenuBackgroundTex);
 
 	if (mainMenuArrow.arrowTex != nullptr && mainMenuArrow.arrowTex != NULL)
 		app->tex->UnLoad(mainMenuArrow.arrowTex);
@@ -123,17 +120,29 @@ bool Scene::CleanUp()
 	if (levelSelectArrow.arrowTex != nullptr && levelSelectArrow.arrowTex != NULL)
 		app->tex->UnLoad(levelSelectArrow.arrowTex);
 
-	if (levelSelectBackground != nullptr && levelSelectBackground != NULL)
-		app->tex->UnLoad(levelSelectBackground);
+	if (levelSelectBackgroundTex != nullptr && levelSelectBackgroundTex != NULL)
+		app->tex->UnLoad(levelSelectBackgroundTex);
 
-	if (pauseMenu != nullptr && pauseMenu != NULL)
-		app->tex->UnLoad(pauseMenu);
+	if (pauseMenuTex != nullptr && pauseMenuTex != NULL)
+		app->tex->UnLoad(pauseMenuTex);
 
 	if (pauseMenuArrow.arrowTex != nullptr && pauseMenuArrow.arrowTex != NULL)
 		app->tex->UnLoad(pauseMenuArrow.arrowTex);
 
-	if (pauseMenuGradient != nullptr && pauseMenuGradient != NULL)
-		app->tex->UnLoad(pauseMenuGradient);
+	if (pauseMenuGradientTex != nullptr && pauseMenuGradientTex != NULL)
+		app->tex->UnLoad(pauseMenuGradientTex);
+
+	if (rockPlanetTexture != nullptr && rockPlanetTexture != NULL)
+		app->tex->UnLoad(rockPlanetTexture);
+
+	if (orbitTexture != nullptr && orbitTexture != NULL)
+		app->tex->UnLoad(orbitTexture);
+
+	if (theVoidTexture != nullptr && theVoidTexture != NULL)
+		app->tex->UnLoad(theVoidTexture);
+
+	if (levelSelectionSpritesheet != nullptr && levelSelectionSpritesheet != NULL)
+		app->tex->UnLoad(levelSelectionSpritesheet);
 
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
@@ -164,7 +173,7 @@ void Scene::UpdateMainMenu()
 {
 	arrowAnim.Update();
 
-	app->render->DrawTexture(mainMenuBackground, 0, 0);
+	app->render->DrawTexture(mainMenuBackgroundTex, 0, 0);
 
 	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
@@ -191,7 +200,7 @@ void Scene::UpdateLevelSelector()
 {
 	arrowAnim.Update();
 
-	app->render->DrawTexture(levelSelectBackground, 0, 0);
+	app->render->DrawTexture(levelSelectBackgroundTex, 0, 0);
 
 	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
@@ -232,7 +241,7 @@ void Scene::UpdateLevelSelector()
 void Scene::UpdateLevels()
 {
 	// Draw background
-	app->render->DrawTexture(levelsBackground, 0, 0);
+	app->render->DrawTexture(levelsBackgroundTex, 0, 0);
 
 	if (app->input->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN && pause == false)
 	{
@@ -307,13 +316,14 @@ void Scene::UpdateLevels()
 
 				app->player->playerBody->SetGravityAcceleration(directionGravity);
 				app->player->playerBody->coeficientAeroDrag = { 0.1f, 0.1f };
+
 			}
 
 			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
 			{
 				// Collision with PLANET
 				app->audio->PlayFx(SFxDestroyed);
-				LOG("PLANET!!!!");
+				SetScene(GetScene());
 			}
 		}
 
@@ -330,18 +340,52 @@ void Scene::UpdateLevels()
 				SetScene(GetScene());
 			}
 		}
+
+		theVoidAnim.Update();
+
+		// Draw player
+		app->render->DrawTexture(app->player->img, METERS_TO_PIXELS(app->player->playerBody->position.x) - 10, METERS_TO_PIXELS(app->player->playerBody->position.y) - 2, NULL, 0.0f, (app->player->playerBody->rotation));
+		
+		for (ListItem<Planet*>* list = planets.start; list; list = list->next)
+		{
+			CircleCollider currentPlanet = list->data->planet;
+			CircleCollider currentOrbit = list->data->orbit;
+
+			if (app->physics->debug)
+			{
+				app->render->DrawCircle(METERS_TO_PIXELS(currentPlanet.x), METERS_TO_PIXELS(currentPlanet.y), currentPlanet.radius, 123, 104, 238);
+				app->render->DrawCircle(METERS_TO_PIXELS(currentOrbit.x), METERS_TO_PIXELS(currentOrbit.y), currentOrbit.radius, 0, 191, 255);
+			}
+
+			if (list->data == theRing)
+				continue;
+
+			// Draw void
+			if (list->data == theVoid)
+			{
+				app->render->DrawTexture(theVoidTexture, theVoid->planetBody->position.x - 400, theVoid->planetBody->position.y - 700, &theVoidAnim.GetCurrentFrame());
+				continue;
+			}
+
+			// Draw planet & orbit
+			app->render->DrawTexture(rockPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+			app->render->DrawTexture(orbitTexture, currentOrbit.x - 100, currentOrbit.y - 100);
+		}
+
 	}
 	else
 	{
 		UpdatePauseMenu();
 	}
+
+
 }
 
 void Scene::UpdatePauseMenu()
 {
-	app->render->DrawTexture(pauseMenuGradient, 0, 0);
+	app->render->DrawTexture(pauseMenuGradientTex, 0, 0);
 
-	app->render->DrawTexture(pauseMenu, 340, 760);
+	app->render->DrawTexture(pauseMenuTex, 340, 760);
 
 	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y);
 
@@ -378,7 +422,7 @@ void Scene::SetScene(SceneType changeScene)
 
 void Scene::SetMainMenu()
 {
-	mainMenuBackground = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
+	mainMenuBackgroundTex = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
 
 	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	mainMenuArrow.selection = 1;
@@ -392,10 +436,12 @@ void Scene::SetMainMenu()
 
 void Scene::SetLevelSelector()
 {
-	levelSelectBackground = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
+	levelSelectBackgroundTex = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
 
 	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	levelSelectArrow.selection = 1;
+
+	levelSelectionSpritesheet = app->tex->Load("Assets/textures/LEVEL_SELECTION.png");
 
 	app->audio->PlayMusicInterpolate("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg", 0, 24, 2);
 	SFxChangeOption = app->audio->LoadFx("Assets/audio/fx/CHANGE_OPTION_FX.wav");
@@ -412,8 +458,11 @@ void Scene::SetLevel1()
 		app->player->Enable();
 	}
 
-	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
+	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
+	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
+	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
@@ -462,7 +511,7 @@ void Scene::SetLevel2()
 		app->player->Enable();
 	}
 
-	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
+	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
@@ -537,7 +586,6 @@ void Scene::SetLevel2()
 
 		list2->data->meteorBody->SetGravityAcceleration(directionGravity); 
 	}
-
 	// To adjust colliders to their correct positions, only once in the start
 	app->physics->Step(1.0f / 60.0f);
 }
@@ -550,12 +598,55 @@ void Scene::SetLevel3()
 		app->player->Enable();
 	}
 
-	levelsBackground = app->tex->Load("Assets/textures/backgroundMod.jpg");
+	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
+
+	theVoid = AddPlanet(CircleCollider(1920 / 2, 1500, 800), 600);
+
+	app->player->theVoidPos = theVoid->planetBody->position;
+
+	app->player->playerBody->position = { 120, 20 };
+	app->player->playerBody->velocity = { 0, 0 };
+
+	//Set Planet/Orbit Gravity
+	ListItem<Planet*>* list;
+	for (list = planets.start; list != NULL; list = list->next)
+	{
+		if (list->data == theVoid)
+			continue;
+
+		float force = 1.0f;
+
+		fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
+
+		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+		list->data->planetBody->SetGravityAcceleration(directionGravity); //WRONG
+		list->data->orbitBody->SetGravityAcceleration(directionGravity);
+	}
+
+	//Set Meteors Gravity
+	ListItem<Meteor*>* list2;
+	for (list2 = meteors.start; list2 != NULL; list2 = list2->next)
+	{
+		float force = 1.0f;
+
+		fPoint directionGravity = theVoid->planetBody->position - list2->data->meteorBody->position;
+
+		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+		list2->data->meteorBody->SetGravityAcceleration(directionGravity);
+	}
 
 	// To adjust colliders to their correct positions, only once in the start
 	app->physics->Step(1.0f / 60.0f);
@@ -568,8 +659,8 @@ void Scene::SetPauseMenu()
 	scene = PAUSE_MENU;
 	
 
-	pauseMenu = app->tex->Load("Assets/textures/Menu.png");
-	pauseMenuGradient = app->tex->Load("Assets/textures/MENU_GRADIENT.png");
+	pauseMenuTex = app->tex->Load("Assets/textures/Menu.png");
+	pauseMenuGradientTex = app->tex->Load("Assets/textures/MENU_GRADIENT.png");
 
 	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
 	pauseMenuArrow.selection = 1;

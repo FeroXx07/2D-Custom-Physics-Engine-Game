@@ -176,10 +176,11 @@ public:
 
 	void CheckCollisions();
 	//... Getters functions for example
+	bool debug = false;
+
 private:
 	// Debug 
 	void DebugDraw();
-	bool debug = false;
 
 	// TODO:
 	/*
