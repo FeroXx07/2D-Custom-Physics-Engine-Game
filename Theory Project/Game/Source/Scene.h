@@ -51,7 +51,7 @@ struct MMSelectorArrow
 
 struct LSSelectorArrow
 {
-	LSSelectorArrow() : position{ { -300, 0 }, {300, 540}, {825, 540}, {1350, 540}, {300, 810} } {}
+	LSSelectorArrow() : position{ { -300, 0 }, {300 - 150, 540}, {825 - 150, 540}, {1350 - 150, 540}, {300, 810} } {}
 	SDL_Texture* arrowTex;
 	const iPoint position[5]; //position[0] == OUT OF WINDOW // position[1] == LEVEL 1 // position[2] == LEVEL 2 // position[3] == LEVEL 3 // position[4] == BACK TO MAIN MENU
 	uint selection;
@@ -59,7 +59,7 @@ struct LSSelectorArrow
 
 struct PMSelectorArrow
 {
-	PMSelectorArrow() : position{ { -300, 0 }, {260,733}, {260, 772}, {260, 810} } {}
+	PMSelectorArrow() : position{ { -300, 0 }, {650,440}, {600, 510}, {700, 580} } {}
 	SDL_Texture* arrowTex;
 	const iPoint position[4]; //position[0] == OUT OF WINDOW // position[1] == BACK TO GAME // position[2] == BACK TO LVL SELECT // position[3] == BACK TO MAIN MENU
 	uint selection;
@@ -127,11 +127,16 @@ private:
 	SDL_Texture* levelsBackgroundTex;
 	SDL_Texture* meteorTexture;
 	SDL_Texture* rockPlanetTexture;
+	SDL_Texture* waterPlanetTexture;
 	SDL_Texture* orbitTexture;
 	SDL_Texture* theVoidTexture;
 	SDL_Texture* levelSelectionSpritesheet;
 	SDL_Texture* mainMenuSpritesheet;
 	SDL_Texture* mainMenuTitle;
+
+	const SDL_Rect lvlSelect = { 0, 0, 506, 76 };
+	const SDL_Rect back = { 506, 0, 306, 76 };
+	const SDL_Rect pauseRect = { 0, 0, 585, 314 };
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
@@ -142,6 +147,12 @@ private:
 	Animation quitAnim;
 	Animation titleAnim;
 	Animation theVoidAnim;
+	Animation selectLvl1Anim;
+	Animation selectLvl2Anim;
+	Animation selectLvl3Anim;
+	Animation pauseResume;
+	Animation pauseLS;
+	Animation pauseMM;
 
 	uint SFxOrbitEnter;
 	uint SFxDestroyed;
@@ -160,15 +171,15 @@ public:
 
 	Planet* theVoid = nullptr;
 	Planet* theRing = nullptr;
-	Planet* AddPlanet(CircleCollider& orbit, int planetRadius)
+	Planet* AddPlanet(CircleCollider& orbit, int planetRadius, SString name = "rockPlanet")
 	{
 		CircleCollider planet = orbit;
 		planet.radius = planetRadius;
-
+		
 		Planet* p = new Planet(planet, orbit);
 		p->planetBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { orbit.x,orbit.y }, NULL, &(p->orbit), { 0.0f,0.0f }, { 0.0f,0.0f });
 		p->planetBody->mass = 1000.0f;
-		p->planetBody->name.Create("planet");
+		p->planetBody->name.Create(name.GetString());
 
 		p->orbitBody = (DynamicBody*)app->physics->CreateBody(BodyType::DYNAMIC_BODY, ColliderType::UNDEFINED, { orbit.x,orbit.y }, NULL, &(p->planet), { 0.0f,0.0f }, { 0.0f,0.0f });
 		p->orbitBody->mass = 1000.0f;

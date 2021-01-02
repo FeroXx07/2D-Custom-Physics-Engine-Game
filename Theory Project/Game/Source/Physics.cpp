@@ -124,8 +124,15 @@ void Physics::Step(float dt)
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
 			DynamicBody* dynamicBody = (DynamicBody*)list->data;
+			if (dynamicBody->name == SString("player") && dynamicBody->buoyancyActive)
+			{
+				int a = 0;
+			}
 
+			dynamicBody->ApplyHidroDrag();
+			dynamicBody->ApplyBuoyancy();
 			dynamicBody->ApplyAeroDrag();
+			
 			//dynamicBody->ApplyAeroLift();
 
 			// Second law newton
@@ -309,20 +316,48 @@ void DynamicBody::ApplyAeroDrag()
 	}
 }
 
-void DynamicBody::ApplyAeroLift()
+void DynamicBody::ApplyBuoyancy()
 {
-	fPoint liftForce;
+	if (buoyancyActive)
+	{
+		fPoint buoyancyForce = this->gravityAcceleration;
 
-	float direction = 0;
-	if (velocity.x > 0)
-		direction = -1;
-	else if (velocity.x < 0)
-		direction  = 1;
+		float magnitude = sqrt(pow(this->gravityAcceleration.x, 2) + pow(this->gravityAcceleration.y, 2));
 
-	liftForce.x = 0.5f * mass * velocity.y * velocity.y * coeficientAeroLift * direction;
-	liftForce.y = -0.5f * mass * velocity.y * velocity.y * coeficientAeroLift;
+		buoyancyForce = { buoyancyForce.x / magnitude, buoyancyForce.y / magnitude };
+		buoyancyForce.Negate();
 
-	forces.PushBack(liftForce);
+		fPoint buoyancyForceMagnitude = { 0,0 };
+		buoyancyForceMagnitude.x = mass * this->gravityAcceleration.x * velocity.x - mass * this->gravityAcceleration.x;
+		buoyancyForceMagnitude.y = mass * this->gravityAcceleration.y * velocity.y - mass * this->gravityAcceleration.y;
+
+		buoyancyForce.x = buoyancyForce.x * buoyancyForceMagnitude.x;
+		buoyancyForce.y = buoyancyForce.y * buoyancyForceMagnitude.y;
+
+		forces.PushBack(buoyancyForce);
+	}
+}
+
+void DynamicBody::ApplyHidroDrag()
+{
+	if (buoyancyActive)
+	{
+		fPoint hidroDrag = velocity;
+
+		float magnitude = sqrt(pow(this->velocity.x, 2) + pow(this->velocity.y, 2));
+
+		hidroDrag = { hidroDrag.x / magnitude, hidroDrag.y / magnitude };
+		hidroDrag.Negate();
+
+		fPoint hidroDragMagnitude = { 0,0 };
+		hidroDragMagnitude.x =velocity.x * this->hydroControlParameter;
+		hidroDragMagnitude.y =velocity.y * this->hydroControlParameter;
+
+		hidroDrag.x = hidroDrag.x * hidroDragMagnitude.x;
+		hidroDrag.y = hidroDrag.y * hidroDragMagnitude.y;
+
+		forces.PushBack(hidroDrag);
+	}
 }
 
 void Body::SolveCollision(Body &body)

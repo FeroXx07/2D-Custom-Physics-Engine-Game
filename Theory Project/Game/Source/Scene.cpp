@@ -77,6 +77,70 @@ Scene::Scene() : Module()
 	titleAnim.PushBack({ 2752, 0, 550, 500 }); //6
 	titleAnim.loop = false;
 	titleAnim.speed = 0.6f;
+
+	//LVL1 Level Selector ANIMATION
+	selectLvl1Anim.PushBack({ 0, 76, 194, 123 }); //1
+	selectLvl1Anim.PushBack({ 0, 199, 194, 123 }); //2
+	selectLvl1Anim.PushBack({ 0, 322, 194, 123 }); //3
+	selectLvl1Anim.PushBack({ 0, 444, 194, 123 }); //4
+	selectLvl1Anim.PushBack({ 0, 568, 194, 123 }); //5
+	selectLvl1Anim.PushBack({ 0, 76, 194, 123 }); //1
+	selectLvl1Anim.loop = false;
+	selectLvl1Anim.speed = 0.3f;
+
+	//LVL2 Level Selector ANIMATION
+	selectLvl2Anim.PushBack({ 195, 76, 194, 123 }); //1
+	selectLvl2Anim.PushBack({ 195, 199, 194, 123 }); //2
+	selectLvl2Anim.PushBack({ 195, 322, 194, 123 }); //3
+	selectLvl2Anim.PushBack({ 195, 444, 194, 123 }); //4
+	selectLvl2Anim.PushBack({ 195, 568, 194, 123 }); //5
+	selectLvl2Anim.PushBack({ 195, 76, 194, 123 }); //1
+	selectLvl2Anim.loop = false;
+	selectLvl2Anim.speed = 0.3f;
+
+	//LVL3 Level Selector ANIMATION
+	selectLvl3Anim.PushBack({ 388, 76, 194, 123 }); //1
+	selectLvl3Anim.PushBack({ 388, 199, 194, 123 }); //2
+	selectLvl3Anim.PushBack({ 388, 322, 194, 123 }); //3
+	selectLvl3Anim.PushBack({ 388, 444, 194, 123 }); //4
+	selectLvl3Anim.PushBack({ 388, 568, 194, 123 }); //5
+	selectLvl3Anim.PushBack({ 388, 76, 194, 123 }); //1
+	selectLvl3Anim.loop = false;
+	selectLvl3Anim.speed = 0.3f;
+
+	//Level Selector PAUSE MENU ANIMATION
+	pauseLS.PushBack({ 0, 314, 320, 72 }); //1
+	pauseLS.PushBack({ 0, 386, 320, 72 }); //2
+	pauseLS.PushBack({ 0, 458, 320, 72 }); //3
+	pauseLS.PushBack({ 0, 531, 320, 72 }); //4
+	pauseLS.PushBack({ 0, 602, 320, 72 }); //5
+	pauseLS.PushBack({ 0, 674, 320, 72 }); //6
+	pauseLS.PushBack({ 0, 314, 320, 72 }); //1
+	pauseLS.loop = false;
+	pauseLS.speed = 0.3f;
+
+	//Resume PAUSE MENU ANIMATION
+	pauseResume.PushBack({ 320, 314, 206, 72 }); //1
+	pauseResume.PushBack({ 320, 386, 206, 72 }); //2
+	pauseResume.PushBack({ 320, 458, 206, 72 }); //3
+	pauseResume.PushBack({ 320, 531, 206, 72 }); //4
+	pauseResume.PushBack({ 320, 602, 206, 72 }); //5
+	pauseResume.PushBack({ 320, 674, 206, 72 }); //6
+	pauseResume.PushBack({ 320, 314, 206, 72 }); //1
+	pauseResume.loop = false;
+	pauseResume.speed = 0.3f;
+
+	//Menu PAUSE MENU ANIMATION
+	pauseMM.PushBack({ 527, 314, 126, 72 }); //1
+	pauseMM.PushBack({ 527, 386, 126, 72 }); //2
+	pauseMM.PushBack({ 527, 458, 126, 72 }); //3
+	pauseMM.PushBack({ 527, 531, 126, 72 }); //4
+	pauseMM.PushBack({ 527, 602, 126, 72 }); //5
+	pauseMM.PushBack({ 527, 314, 126, 72 }); //1
+	pauseMM.loop = false;
+	pauseMM.speed = 0.3f;
+
+
 }
 
 // Destructor
@@ -172,6 +236,9 @@ bool Scene::CleanUp()
 	if (rockPlanetTexture != nullptr && rockPlanetTexture != NULL)
 		app->tex->UnLoad(rockPlanetTexture);
 
+	if (waterPlanetTexture != nullptr && waterPlanetTexture != NULL)
+		app->tex->UnLoad(waterPlanetTexture);
+
 	if (orbitTexture != nullptr && orbitTexture != NULL)
 		app->tex->UnLoad(orbitTexture);
 
@@ -265,6 +332,10 @@ void Scene::UpdateLevelSelector()
 
 	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
+	app->render->DrawTexture(levelSelectionSpritesheet, 700, 150, &lvlSelect);
+
+	app->render->DrawTexture(levelSelectionSpritesheet, 300 + 190, 840, &back);
+
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
 		app->audio->PlayFx(SFxSelectOption);
@@ -297,6 +368,30 @@ void Scene::UpdateLevelSelector()
 		levelSelectArrow.selection = 4;
 		app->audio->PlayFx(SFxChangeOption);
 	}
+
+	//Options Level Selector Animations
+	if (levelSelectArrow.selection == 1)
+	{
+		selectLvl1Anim.Update();
+		selectLvl2Anim.Reset();
+		selectLvl3Anim.Reset();
+	}
+	else if (levelSelectArrow.selection == 2)
+	{
+		selectLvl2Anim.Update();
+		selectLvl1Anim.Reset();
+		selectLvl3Anim.Reset();
+	}
+	else if (levelSelectArrow.selection == 3)
+	{
+		selectLvl3Anim.Update();
+		selectLvl1Anim.Reset();
+		selectLvl2Anim.Reset();
+	}
+
+	app->render->DrawTexture(levelSelectionSpritesheet, 300 - 150 + 190, 540, &selectLvl1Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 825 - 150 + 190, 540, &selectLvl2Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 1350 - 150 + 190, 540, &selectLvl3Anim.GetCurrentFrame());
 }
 
 void Scene::UpdateLevels()
@@ -359,6 +454,7 @@ void Scene::UpdateLevels()
 
 		app->player->onOrbit = false;
 
+		bool inWater = false;
 		for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
 		{
 			// Check if reached loose condition
@@ -425,9 +521,26 @@ void Scene::UpdateLevels()
 			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
 			{
 				// Collision with PLANET
-				app->audio->PlayFx(SFxDestroyed);
-				SetScene(GetScene());
+				if (list->data->planetBody->name == SString("rockPlanet"))
+				{
+					app->audio->PlayFx(SFxDestroyed);
+					SetScene(GetScene());
+				}
+				if (list->data->planetBody->name == SString("waterPlanet"))
+				{
+					app->player->playerBody->buoyancyActive = true;
+					inWater = true;
+				}
 			}
+		}
+		if (inWater == false)
+		{
+			app->player->playerBody->buoyancyActive = false;
+			app->player->playerBody->hydroControlParameter = 0.0f;
+		}
+		else
+		{
+			app->player->playerBody->hydroControlParameter = 10.0f;
 		}
 
 		// Draw & Check Collisions with meteors
@@ -470,8 +583,15 @@ void Scene::UpdateLevels()
 				continue;
 			}
 
+			SString rock = "rockPlanet";
+			SString water = "waterPlanet";
+
 			// Draw planet & orbit
-			app->render->DrawTexture(rockPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+			if (list->data->planetBody->name == rock)
+				app->render->DrawTexture(rockPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+			else if (list->data->planetBody->name == water)
+				app->render->DrawTexture(waterPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+
 			app->render->DrawTexture(orbitTexture, currentOrbit.x - 100, currentOrbit.y - 100);
 		}
 
@@ -486,11 +606,13 @@ void Scene::UpdateLevels()
 
 void Scene::UpdatePauseMenu()
 {
+	arrowAnim.Update();
+
 	app->render->DrawTexture(pauseMenuGradientTex, 0, 0);
 
-	app->render->DrawTexture(pauseMenuTex, 340, 760);
+	app->render->DrawTexture(pauseMenuTex, 667, 383, &pauseRect);
 
-	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y);
+	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
@@ -504,6 +626,29 @@ void Scene::UpdatePauseMenu()
 	if (app->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN && pauseMenuArrow.selection != 1) pauseMenuArrow.selection--;
 
 	if (app->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN && pauseMenuArrow.selection != 3) pauseMenuArrow.selection++;
+
+	if (pauseMenuArrow.selection == 1)
+	{
+		pauseResume.Update();
+		pauseLS.Reset();
+		pauseMM.Reset();
+	}
+	else if (pauseMenuArrow.selection == 2)
+	{
+		pauseLS.Update();
+		pauseResume.Reset();
+		pauseMM.Reset();
+	}
+	else if (pauseMenuArrow.selection == 3)
+	{
+		pauseMM.Update();
+		pauseResume.Reset();
+		pauseLS.Reset();
+	}
+
+	app->render->DrawTexture(pauseMenuTex, 856, 461 + 15, &pauseResume.GetCurrentFrame());
+	app->render->DrawTexture(pauseMenuTex, 800, 540, &pauseLS.GetCurrentFrame());
+	app->render->DrawTexture(pauseMenuTex, 897, 618 - 2, &pauseMM.GetCurrentFrame());
 }
 
 
@@ -525,6 +670,8 @@ void Scene::SetScene(SceneType changeScene)
 
 void Scene::SetMainMenu()
 {
+	playAnim.Reset();
+	quitAnim.Reset();
 	mainMenuBackgroundTex = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
 
 	mainMenuSpritesheet = app->tex->Load("Assets/textures/title_options.png");
@@ -544,12 +691,20 @@ void Scene::SetMainMenu()
 
 void Scene::SetLevelSelector()
 {
+	selectLvl1Anim.Reset();
+	selectLvl2Anim.Reset();
+	selectLvl3Anim.Reset();
+
 	levelSelectBackgroundTex = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
 
 	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
-	levelSelectArrow.selection = 3;
+	levelSelectArrow.selection = 1;
+
 
 	levelSelectionSpritesheet = app->tex->Load("Assets/textures/LEVEL_SELECTION.png");
+
+	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
+	levelSelectArrow.selection = 1;
 
 	app->audio->PlayMusicInterpolate("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg", 0, 24, 2);
 	SFxChangeOption = app->audio->LoadFx("Assets/audio/fx/CHANGE_OPTION_FX.wav");
@@ -569,6 +724,7 @@ void Scene::SetLevel1()
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
@@ -576,8 +732,8 @@ void Scene::SetLevel1()
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
 
-	AddPlanet(CircleCollider(150, 150, 100), 10);
-	AddPlanet(CircleCollider(150, 500, 100), 10);
+	AddPlanet(CircleCollider(150, 150, 100), 60,"waterPlanet");
+	AddPlanet(CircleCollider(150, 500, 100), 60,"waterPlanet");
 
 	AddMeteor(Collider({ 300,60,20,180 }));
 	AddMeteor(Collider({ 300,360,20,220 }));
@@ -622,6 +778,7 @@ void Scene::SetLevel2()
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
@@ -712,6 +869,7 @@ void Scene::SetLevel3()
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
@@ -793,10 +951,10 @@ void Scene::SetPauseMenu()
 	scene = PAUSE_MENU;
 	
 
-	pauseMenuTex = app->tex->Load("Assets/textures/Menu.png");
+	pauseMenuTex = app->tex->Load("Assets/textures/pause_menu.png");
 	pauseMenuGradientTex = app->tex->Load("Assets/textures/MENU_GRADIENT.png");
 
-	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	pauseMenuArrow.selection = 1;
 
 

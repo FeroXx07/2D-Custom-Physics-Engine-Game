@@ -53,8 +53,7 @@ bool Player::Start()
 	playerBody->mass = 10;
 	playerBody->coeficientRestitution = { 1.0f,0.8f };
 	playerBody->coeficientAeroDrag = { 0.01f, 0.01f };
-	playerBody->coeficientAeroLift = 0.5f;
-
+	playerBody->name = "player";
 	return true;
 }
 
