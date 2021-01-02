@@ -136,6 +136,7 @@ private:
 
 	const SDL_Rect lvlSelect = { 0, 0, 506, 76 };
 	const SDL_Rect back = { 506, 0, 306, 76 };
+	const SDL_Rect pauseRect = { 0, 0, 585, 314 };
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
@@ -149,6 +150,9 @@ private:
 	Animation selectLvl1Anim;
 	Animation selectLvl2Anim;
 	Animation selectLvl3Anim;
+	Animation pauseResume;
+	Animation pauseLS;
+	Animation pauseMM;
 
 	uint SFxOrbitEnter;
 	uint SFxDestroyed;
