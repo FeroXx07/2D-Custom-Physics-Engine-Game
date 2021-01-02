@@ -204,6 +204,9 @@ bool Scene::CleanUp()
 	if (rockPlanetTexture != nullptr && rockPlanetTexture != NULL)
 		app->tex->UnLoad(rockPlanetTexture);
 
+	if (waterPlanetTexture != nullptr && waterPlanetTexture != NULL)
+		app->tex->UnLoad(waterPlanetTexture);
+
 	if (orbitTexture != nullptr && orbitTexture != NULL)
 		app->tex->UnLoad(orbitTexture);
 
@@ -297,7 +300,7 @@ void Scene::UpdateLevelSelector()
 
 	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
-	app->render->DrawTexture(levelSelectionSpritesheet, 725, 200, &lvlSelect);
+	app->render->DrawTexture(levelSelectionSpritesheet, 700, 150, &lvlSelect);
 
 	app->render->DrawTexture(levelSelectionSpritesheet, 300 + 190, 840, &back);
 
@@ -354,9 +357,9 @@ void Scene::UpdateLevelSelector()
 		selectLvl2Anim.Reset();
 	}
 
-	app->render->DrawTexture(levelSelectionSpritesheet, 300 + 190, 540, &selectLvl1Anim.GetCurrentFrame());
-	app->render->DrawTexture(levelSelectionSpritesheet, 825 + 190, 540, &selectLvl2Anim.GetCurrentFrame());
-	app->render->DrawTexture(levelSelectionSpritesheet, 1350 + 190, 540, &selectLvl3Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 300 - 150 + 190, 540, &selectLvl1Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 825 - 150 + 190, 540, &selectLvl2Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 1350 - 150 + 190, 540, &selectLvl3Anim.GetCurrentFrame());
 }
 
 void Scene::UpdateLevels()
@@ -482,12 +485,28 @@ void Scene::UpdateLevels()
 
 			}
 
+			bool inWater = false;
 			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
 			{
 				// Collision with PLANET
-				app->audio->PlayFx(SFxDestroyed);
-				SetScene(GetScene());
+				if (list->data->planetBody->name == SString("rockPlanet"))
+				{
+					app->audio->PlayFx(SFxDestroyed);
+					SetScene(GetScene());
+				}
+				if (list->data->planetBody->name == SString("waterPlanet"))
+				{
+					app->player->playerBody->buoyancyActive = true;
+					app->player->playerBody->hydroControlParameter = 2.0f;
+					inWater = true;
+				}
 			}
+			if (inWater == false)
+			{
+				app->player->playerBody->buoyancyActive = false;
+				app->player->playerBody->hydroControlParameter = 0.0f;
+			}
+				
 		}
 
 		// Draw & Check Collisions with meteors
@@ -530,8 +549,15 @@ void Scene::UpdateLevels()
 				continue;
 			}
 
+			SString rock = "rockPlanet";
+			SString water = "waterPlanet";
+
 			// Draw planet & orbit
-			app->render->DrawTexture(rockPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+			if (list->data->planetBody->name == rock)
+				app->render->DrawTexture(rockPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+			else if (list->data->planetBody->name == water)
+				app->render->DrawTexture(waterPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
+
 			app->render->DrawTexture(orbitTexture, currentOrbit.x - 100, currentOrbit.y - 100);
 		}
 
@@ -612,6 +638,10 @@ void Scene::SetLevelSelector()
 
 	levelSelectBackgroundTex = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
 
+	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
+	levelSelectArrow.selection = 1;
+
+
 	levelSelectionSpritesheet = app->tex->Load("Assets/textures/LEVEL_SELECTION.png");
 
 	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
@@ -635,6 +665,7 @@ void Scene::SetLevel1()
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
@@ -642,8 +673,8 @@ void Scene::SetLevel1()
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
 
-	AddPlanet(CircleCollider(150, 150, 100), 10);
-	AddPlanet(CircleCollider(150, 500, 100), 10);
+	AddPlanet(CircleCollider(150, 150, 100), 10,"waterPlanet");
+	AddPlanet(CircleCollider(150, 500, 100), 10,"waterPlanet");
 
 	AddMeteor(Collider({ 300,60,20,180 }));
 	AddMeteor(Collider({ 300,360,20,220 }));
@@ -688,6 +719,7 @@ void Scene::SetLevel2()
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
@@ -778,6 +810,7 @@ void Scene::SetLevel3()
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
 	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 

@@ -124,8 +124,15 @@ void Physics::Step(float dt)
 		if (list->data->bodyType == BodyType::DYNAMIC_BODY)
 		{
 			DynamicBody* dynamicBody = (DynamicBody*)list->data;
+			if (dynamicBody->name == SString("player") && dynamicBody->buoyancyActive)
+			{
+				int a = 0;
+			}
 
+			dynamicBody->ApplyHidroDrag();
+			dynamicBody->ApplyBuoyancy();
 			dynamicBody->ApplyAeroDrag();
+			
 			//dynamicBody->ApplyAeroLift();
 
 			// Second law newton
@@ -323,6 +330,39 @@ void DynamicBody::ApplyAeroLift()
 	liftForce.y = -0.5f * mass * velocity.y * velocity.y * coeficientAeroLift;
 
 	forces.PushBack(liftForce);
+}
+
+void DynamicBody::ApplyBuoyancy()
+{
+	if (buoyancyActive)
+	{
+		/*fPoint buoyancyForce = this->gravityAcceleration;
+
+		float magnitude = sqrt(pow(this->gravityAcceleration.x, 2) + pow(this->gravityAcceleration.y, 2));
+
+		buoyancyForce = { buoyancyForce.x / magnitude, buoyancyForce.y / magnitude };*/
+
+		fPoint buoyancyForceMagnitude = { 0,0 };
+		buoyancyForceMagnitude.x = mass * this->gravityAcceleration.x * -velocity.x - mass * this->gravityAcceleration.x;
+		buoyancyForceMagnitude.y = mass * this->gravityAcceleration.y * -velocity.y - mass * this->gravityAcceleration.y;
+
+		/*buoyancyForce = { buoyancyForce.x * buoyancyForceMagnitude.x, buoyancyForce.y * buoyancyForceMagnitude.y };*/
+
+		forces.PushBack(buoyancyForceMagnitude);
+	}
+}
+
+void DynamicBody::ApplyHidroDrag()
+{
+	if (buoyancyActive)
+	{
+		fPoint hidroDragForce = { 0,0 };
+
+		hidroDragForce.x =-velocity.x * this->hydroControlParameter;
+		hidroDragForce.y =-velocity.y * this->hydroControlParameter;
+
+		forces.PushBack(hidroDragForce);
+	}
 }
 
 void Body::SolveCollision(Body &body)

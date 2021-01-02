@@ -123,22 +123,23 @@ public:
 	fPoint coeficientRestitution = { 1.0f,1.0f };
 	fPoint coeficientAeroDrag = { 0.0f,0.0f };
 	float coeficientAeroLift = 0.0f;
+	float hydroControlParameter = 0.0f;
 	DynArray<fPoint> forces;
 
 public:
 	void SetGravityAcceleration(fPoint &gravity);
 	void ApplyForce(fPoint Newtons);
 	void ApplyForce(int NewtonsX, int NewtonsY = 0);
-	void ApplyTorque();
-	void Rotate();
 	void SecondNewton();
 	void ApplyAeroDrag();
 	void ApplyAeroLift();
-
+	void ApplyBuoyancy();
+	void ApplyHidroDrag();
 public:
 	bool onGround, onTop, onWall;
 	bool dragAeroActive = true;
 	bool liftAeroActive = false;
+	bool buoyancyActive = false;
 	//...
 };
 
@@ -181,21 +182,6 @@ public:
 private:
 	// Debug 
 	void DebugDraw();
-
-	// TODO:
-	/*
-	* -Circular colliders
-	* -Circuler collisions with rects and circles
-	* -Torque? Or rotation as function of input?
-	* 
-	* // ---------------- GAME ------------------
-	* -- Player Ship
-	* -- WASD movement QE rotation SPACE thrust
-	* 
-	* --Planet struct without orbit
-	* --Hereby struct (Planet with orbit)
-	* --Void struct
-	*/
 };
 
 
