@@ -122,7 +122,6 @@ public:
 	fPoint sumForces = {0.0f, 0.0f};
 	fPoint coeficientRestitution = { 1.0f,1.0f };
 	fPoint coeficientAeroDrag = { 0.0f,0.0f };
-	float coeficientAeroLift = 0.0f;
 	float hydroControlParameter = 0.0f;
 	DynArray<fPoint> forces;
 
@@ -132,7 +131,6 @@ public:
 	void ApplyForce(int NewtonsX, int NewtonsY = 0);
 	void SecondNewton();
 	void ApplyAeroDrag();
-	void ApplyAeroLift();
 	void ApplyBuoyancy();
 	void ApplyHidroDrag();
 public:

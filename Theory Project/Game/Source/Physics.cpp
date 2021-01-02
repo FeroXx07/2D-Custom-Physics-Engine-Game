@@ -316,39 +316,25 @@ void DynamicBody::ApplyAeroDrag()
 	}
 }
 
-void DynamicBody::ApplyAeroLift()
-{
-	fPoint liftForce;
-
-	float direction = 0;
-	if (velocity.x > 0)
-		direction = -1;
-	else if (velocity.x < 0)
-		direction  = 1;
-
-	liftForce.x = 0.5f * mass * velocity.y * velocity.y * coeficientAeroLift * direction;
-	liftForce.y = -0.5f * mass * velocity.y * velocity.y * coeficientAeroLift;
-
-	forces.PushBack(liftForce);
-}
-
 void DynamicBody::ApplyBuoyancy()
 {
 	if (buoyancyActive)
 	{
-		/*fPoint buoyancyForce = this->gravityAcceleration;
+		fPoint buoyancyForce = this->gravityAcceleration;
 
 		float magnitude = sqrt(pow(this->gravityAcceleration.x, 2) + pow(this->gravityAcceleration.y, 2));
 
-		buoyancyForce = { buoyancyForce.x / magnitude, buoyancyForce.y / magnitude };*/
+		buoyancyForce = { buoyancyForce.x / magnitude, buoyancyForce.y / magnitude };
+		buoyancyForce.Negate();
 
 		fPoint buoyancyForceMagnitude = { 0,0 };
-		buoyancyForceMagnitude.x = mass * this->gravityAcceleration.x * -velocity.x - mass * this->gravityAcceleration.x;
-		buoyancyForceMagnitude.y = mass * this->gravityAcceleration.y * -velocity.y - mass * this->gravityAcceleration.y;
+		buoyancyForceMagnitude.x = mass * this->gravityAcceleration.x * velocity.x - mass * this->gravityAcceleration.x;
+		buoyancyForceMagnitude.y = mass * this->gravityAcceleration.y * velocity.y - mass * this->gravityAcceleration.y;
 
-		/*buoyancyForce = { buoyancyForce.x * buoyancyForceMagnitude.x, buoyancyForce.y * buoyancyForceMagnitude.y };*/
+		buoyancyForce.x = buoyancyForce.x * buoyancyForceMagnitude.x;
+		buoyancyForce.y = buoyancyForce.y * buoyancyForceMagnitude.y;
 
-		forces.PushBack(buoyancyForceMagnitude);
+		forces.PushBack(buoyancyForce);
 	}
 }
 
@@ -356,12 +342,21 @@ void DynamicBody::ApplyHidroDrag()
 {
 	if (buoyancyActive)
 	{
-		fPoint hidroDragForce = { 0,0 };
+		fPoint hidroDrag = velocity;
 
-		hidroDragForce.x =-velocity.x * this->hydroControlParameter;
-		hidroDragForce.y =-velocity.y * this->hydroControlParameter;
+		float magnitude = sqrt(pow(this->velocity.x, 2) + pow(this->velocity.y, 2));
 
-		forces.PushBack(hidroDragForce);
+		hidroDrag = { hidroDrag.x / magnitude, hidroDrag.y / magnitude };
+		hidroDrag.Negate();
+
+		fPoint hidroDragMagnitude = { 0,0 };
+		hidroDragMagnitude.x =velocity.x * this->hydroControlParameter;
+		hidroDragMagnitude.y =velocity.y * this->hydroControlParameter;
+
+		hidroDrag.x = hidroDrag.x * hidroDragMagnitude.x;
+		hidroDrag.y = hidroDrag.y * hidroDragMagnitude.y;
+
+		forces.PushBack(hidroDrag);
 	}
 }
 

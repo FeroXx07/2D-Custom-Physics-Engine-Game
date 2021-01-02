@@ -59,7 +59,7 @@ struct LSSelectorArrow
 
 struct PMSelectorArrow
 {
-	PMSelectorArrow() : position{ { -300, 0 }, {260,733}, {260, 772}, {260, 810} } {}
+	PMSelectorArrow() : position{ { -300, 0 }, {650,440}, {600, 510}, {700, 580} } {}
 	SDL_Texture* arrowTex;
 	const iPoint position[4]; //position[0] == OUT OF WINDOW // position[1] == BACK TO GAME // position[2] == BACK TO LVL SELECT // position[3] == BACK TO MAIN MENU
 	uint selection;

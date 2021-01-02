@@ -454,6 +454,7 @@ void Scene::UpdateLevels()
 
 		app->player->onOrbit = false;
 
+		bool inWater = false;
 		for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
 		{
 			// Check if reached loose condition
@@ -517,7 +518,6 @@ void Scene::UpdateLevels()
 
 			}
 
-			bool inWater = false;
 			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
 			{
 				// Collision with PLANET
@@ -529,16 +529,18 @@ void Scene::UpdateLevels()
 				if (list->data->planetBody->name == SString("waterPlanet"))
 				{
 					app->player->playerBody->buoyancyActive = true;
-					app->player->playerBody->hydroControlParameter = 2.0f;
 					inWater = true;
 				}
 			}
-			if (inWater == false)
-			{
-				app->player->playerBody->buoyancyActive = false;
-				app->player->playerBody->hydroControlParameter = 0.0f;
-			}
-				
+		}
+		if (inWater == false)
+		{
+			app->player->playerBody->buoyancyActive = false;
+			app->player->playerBody->hydroControlParameter = 0.0f;
+		}
+		else
+		{
+			app->player->playerBody->hydroControlParameter = 10.0f;
 		}
 
 		// Draw & Check Collisions with meteors
@@ -604,11 +606,13 @@ void Scene::UpdateLevels()
 
 void Scene::UpdatePauseMenu()
 {
+	arrowAnim.Update();
+
 	app->render->DrawTexture(pauseMenuGradientTex, 0, 0);
 
 	app->render->DrawTexture(pauseMenuTex, 667, 383, &pauseRect);
 
-	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y);
+	app->render->DrawTexture(pauseMenuArrow.arrowTex, pauseMenuArrow.position[pauseMenuArrow.selection].x, pauseMenuArrow.position[pauseMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
@@ -728,8 +732,8 @@ void Scene::SetLevel1()
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
 
-	AddPlanet(CircleCollider(150, 150, 100), 10,"waterPlanet");
-	AddPlanet(CircleCollider(150, 500, 100), 10,"waterPlanet");
+	AddPlanet(CircleCollider(150, 150, 100), 60,"waterPlanet");
+	AddPlanet(CircleCollider(150, 500, 100), 60,"waterPlanet");
 
 	AddMeteor(Collider({ 300,60,20,180 }));
 	AddMeteor(Collider({ 300,360,20,220 }));
@@ -950,7 +954,7 @@ void Scene::SetPauseMenu()
 	pauseMenuTex = app->tex->Load("Assets/textures/pause_menu.png");
 	pauseMenuGradientTex = app->tex->Load("Assets/textures/MENU_GRADIENT.png");
 
-	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/SELECTOR_ARROW_TEMP.png");
+	pauseMenuArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	pauseMenuArrow.selection = 1;
 
 
