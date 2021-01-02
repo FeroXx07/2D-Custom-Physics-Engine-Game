@@ -147,7 +147,8 @@ private:
 	uint SFxSelectOption;
 	uint SFxChangeOption;
 
-
+	float counterSpawn;
+	CircleCollider listRandom[5];
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;

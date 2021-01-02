@@ -8,6 +8,7 @@
 #include "Map.h"
 #include "Player.h"
 #include "ModuleFadeToBlack.h"
+#include <stdlib.h>
 
 #include "Defs.h"
 #include "Log.h"
@@ -53,7 +54,7 @@ Scene::Scene() : Module()
 	playAnim.PushBack({ 22, 1342, 550, 146 }); //7
 	playAnim.PushBack({ 22, 106, 550, 146 }); //1
 	playAnim.loop = false;
-	playAnim.speed = 0.5f;
+	playAnim.speed = 0.3f;
 
 	//QUIT MAIN MENU ANIMATION
 	quitAnim.PushBack({ 764, 106, 550, 146 }); //1
@@ -65,7 +66,7 @@ Scene::Scene() : Module()
 	quitAnim.PushBack({ 764, 1342, 550, 146 }); //7
 	quitAnim.PushBack({ 764, 106, 550, 146 }); //1
 	quitAnim.loop = false;
-	quitAnim.speed = 0.5f;
+	quitAnim.speed = 0.3f;
 }
 
 // Destructor
@@ -86,7 +87,7 @@ bool Scene::Start()
 {
 	//Set Initial Scene
 	SetScene(MAIN_MENU);
-
+	srand(_getpid());
 	return true;
 }
 
@@ -298,6 +299,36 @@ void Scene::UpdateLevels()
 		if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
 			SetScene(GetScene());
 
+		if (GetScene() == LEVEL_3)
+		{
+			counterSpawn += 1.0 / 60.0f;
+			if (counterSpawn >= 3.0f)
+			{
+				counterSpawn = 0.0f;
+				int random = rand() % 5;
+				AddPlanet(listRandom[random], 10);
+
+				ListItem<Planet*>* list;
+				for (list = planets.start; list != NULL; list = list->next)
+				{
+					if (list->data == theVoid)
+						continue;
+
+					float force = 1.5f;
+
+					fPoint directionGravity = theVoid->planetBody->position - list->data->planetBody->position;
+
+					float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+					directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+					directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+					list->data->planetBody->SetGravityAcceleration(directionGravity); 
+					list->data->orbitBody->SetGravityAcceleration(directionGravity);
+				}
+			}
+		}
+
 		app->player->onOrbit = false;
 
 		for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
@@ -485,7 +516,7 @@ void Scene::SetLevelSelector()
 	levelSelectBackgroundTex = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
 
 	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
-	levelSelectArrow.selection = 1;
+	levelSelectArrow.selection = 3;
 
 	levelSelectionSpritesheet = app->tex->Load("Assets/textures/LEVEL_SELECTION.png");
 
@@ -559,6 +590,9 @@ void Scene::SetLevel2()
 
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
+	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
+	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
@@ -646,10 +680,24 @@ void Scene::SetLevel3()
 
 	levelsBackgroundTex = app->tex->Load("Assets/textures/backgroundMod.jpg");
 	meteorTexture = app->tex->Load("Assets/textures/MeteorTexture2.jpg");
+	rockPlanetTexture = app->tex->Load("Assets/textures/ROCK_PLANET.png");
+	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
+	theVoidTexture = app->tex->Load("Assets/textures/void.png");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
+
+	AddPlanet(CircleCollider(150, 150, 100), 10);
+	AddPlanet(CircleCollider(150, 500, 100), 10);
+
+	AddPlanet(CircleCollider(540, 150, 100), 10);
+	AddPlanet(CircleCollider(480, 700, 100), 10);
+	AddPlanet(CircleCollider(800, 400, 100), 10);
+
+	AddPlanet(CircleCollider(1100, 700, 100), 10);
+	AddPlanet(CircleCollider(1600, 600, 100), 10);
+	AddPlanet(CircleCollider(1100, 200, 100), 10);
 
 	theVoid = AddPlanet(CircleCollider(1920 / 2, 1500, 800), 600);
 
@@ -695,6 +743,12 @@ void Scene::SetLevel3()
 	}
 
 	// To adjust colliders to their correct positions, only once in the start
+	listRandom[0] = CircleCollider(150, 0, 100);
+	listRandom[1] = CircleCollider(540, 0, 100);
+	listRandom[2] = CircleCollider(800, 0, 100);
+	listRandom[3] = CircleCollider(1100, 0, 100);
+	listRandom[4] = CircleCollider(1600, 0, 100);
+
 	app->physics->Step(1.0f / 60.0f);
 }
 
