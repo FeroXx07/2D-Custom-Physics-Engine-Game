@@ -133,6 +133,9 @@ private:
 	SDL_Texture* mainMenuSpritesheet;
 	SDL_Texture* mainMenuTitle;
 
+	const SDL_Rect lvlSelect = { 0, 0, 506, 76 };
+	const SDL_Rect back = { 506, 0, 306, 76 };
+
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
 	PMSelectorArrow pauseMenuArrow;
@@ -142,6 +145,9 @@ private:
 	Animation quitAnim;
 	Animation titleAnim;
 	Animation theVoidAnim;
+	Animation selectLvl1Anim;
+	Animation selectLvl2Anim;
+	Animation selectLvl3Anim;
 
 	uint SFxOrbitEnter;
 	uint SFxDestroyed;

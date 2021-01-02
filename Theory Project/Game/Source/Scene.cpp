@@ -77,6 +77,38 @@ Scene::Scene() : Module()
 	titleAnim.PushBack({ 2752, 0, 550, 500 }); //6
 	titleAnim.loop = false;
 	titleAnim.speed = 0.6f;
+
+	//LVL1 Level Selector ANIMATION
+	selectLvl1Anim.PushBack({ 0, 76, 194, 123 }); //1
+	selectLvl1Anim.PushBack({ 0, 199, 194, 123 }); //2
+	selectLvl1Anim.PushBack({ 0, 322, 194, 123 }); //3
+	selectLvl1Anim.PushBack({ 0, 444, 194, 123 }); //4
+	selectLvl1Anim.PushBack({ 0, 568, 194, 123 }); //5
+	selectLvl1Anim.PushBack({ 0, 76, 194, 123 }); //1
+	selectLvl1Anim.loop = false;
+	selectLvl1Anim.speed = 0.3f;
+
+	//LVL2 Level Selector ANIMATION
+	selectLvl2Anim.PushBack({ 195, 76, 194, 123 }); //1
+	selectLvl2Anim.PushBack({ 195, 199, 194, 123 }); //2
+	selectLvl2Anim.PushBack({ 195, 322, 194, 123 }); //3
+	selectLvl2Anim.PushBack({ 195, 444, 194, 123 }); //4
+	selectLvl2Anim.PushBack({ 195, 568, 194, 123 }); //5
+	selectLvl2Anim.PushBack({ 195, 76, 194, 123 }); //1
+	selectLvl2Anim.loop = false;
+	selectLvl2Anim.speed = 0.3f;
+
+	//LVL3 Level Selector ANIMATION
+	selectLvl3Anim.PushBack({ 388, 76, 194, 123 }); //1
+	selectLvl3Anim.PushBack({ 388, 199, 194, 123 }); //2
+	selectLvl3Anim.PushBack({ 388, 322, 194, 123 }); //3
+	selectLvl3Anim.PushBack({ 388, 444, 194, 123 }); //4
+	selectLvl3Anim.PushBack({ 388, 568, 194, 123 }); //5
+	selectLvl3Anim.PushBack({ 388, 76, 194, 123 }); //1
+	selectLvl3Anim.loop = false;
+	selectLvl3Anim.speed = 0.3f;
+
+
 }
 
 // Destructor
@@ -265,6 +297,10 @@ void Scene::UpdateLevelSelector()
 
 	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
+	app->render->DrawTexture(levelSelectionSpritesheet, 725, 200, &lvlSelect);
+
+	app->render->DrawTexture(levelSelectionSpritesheet, 300 + 190, 840, &back);
+
 	if (app->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
 	{
 		app->audio->PlayFx(SFxSelectOption);
@@ -297,6 +333,30 @@ void Scene::UpdateLevelSelector()
 		levelSelectArrow.selection = 4;
 		app->audio->PlayFx(SFxChangeOption);
 	}
+
+	//Options Level Selector Animations
+	if (levelSelectArrow.selection == 1)
+	{
+		selectLvl1Anim.Update();
+		selectLvl2Anim.Reset();
+		selectLvl3Anim.Reset();
+	}
+	else if (levelSelectArrow.selection == 2)
+	{
+		selectLvl2Anim.Update();
+		selectLvl1Anim.Reset();
+		selectLvl3Anim.Reset();
+	}
+	else if (levelSelectArrow.selection == 3)
+	{
+		selectLvl3Anim.Update();
+		selectLvl1Anim.Reset();
+		selectLvl2Anim.Reset();
+	}
+
+	app->render->DrawTexture(levelSelectionSpritesheet, 300 + 190, 540, &selectLvl1Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 825 + 190, 540, &selectLvl2Anim.GetCurrentFrame());
+	app->render->DrawTexture(levelSelectionSpritesheet, 1350 + 190, 540, &selectLvl3Anim.GetCurrentFrame());
 }
 
 void Scene::UpdateLevels()
@@ -525,6 +585,8 @@ void Scene::SetScene(SceneType changeScene)
 
 void Scene::SetMainMenu()
 {
+	playAnim.Reset();
+	quitAnim.Reset();
 	mainMenuBackgroundTex = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
 
 	mainMenuSpritesheet = app->tex->Load("Assets/textures/title_options.png");
@@ -544,12 +606,16 @@ void Scene::SetMainMenu()
 
 void Scene::SetLevelSelector()
 {
+	selectLvl1Anim.Reset();
+	selectLvl2Anim.Reset();
+	selectLvl3Anim.Reset();
+
 	levelSelectBackgroundTex = app->tex->Load("Assets/textures/LEVEL_SELECTION_TEMP_BACKGROUND.png");
 
-	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
-	levelSelectArrow.selection = 3;
-
 	levelSelectionSpritesheet = app->tex->Load("Assets/textures/LEVEL_SELECTION.png");
+
+	levelSelectArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
+	levelSelectArrow.selection = 1;
 
 	app->audio->PlayMusicInterpolate("Assets/audio/Music/LEVEL_SELECTOR_MUSIC.ogg", 0, 24, 2);
 	SFxChangeOption = app->audio->LoadFx("Assets/audio/fx/CHANGE_OPTION_FX.wav");
