@@ -43,7 +43,7 @@ public:
 
 struct MMSelectorArrow
 {
-	MMSelectorArrow() : position{ { -300, 0 }, {525, 675}, {525, 800} }{}
+	MMSelectorArrow() : position{ { -300, 0 }, {525, 675}, {525, 850} }{}
 	SDL_Texture* arrowTex;
 	const iPoint position[3]; //position[0] == OUT OF WINDOW // position[1] == PLAY GAME // position[2] == SKIP GAME
 	uint selection;
@@ -130,12 +130,15 @@ private:
 	SDL_Texture* orbitTexture;
 	SDL_Texture* theVoidTexture;
 	SDL_Texture* levelSelectionSpritesheet;
+	SDL_Texture* mainMenuSpritesheet;
 
 	MMSelectorArrow mainMenuArrow;
 	LSSelectorArrow levelSelectArrow;
 	PMSelectorArrow pauseMenuArrow;
 
 	Animation arrowAnim;
+	Animation playAnim;
+	Animation quitAnim;
 	Animation theVoidAnim;
 
 	uint SFxOrbitEnter;
@@ -143,6 +146,8 @@ private:
 
 	uint SFxSelectOption;
 	uint SFxChangeOption;
+
+
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;

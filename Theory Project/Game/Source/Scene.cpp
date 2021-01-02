@@ -19,6 +19,7 @@ Scene::Scene() : Module()
 {
 	name.Create("scene");
 
+	//ARROW ANIMATION
 	arrowAnim.PushBack({ 0,42,179,135 });// 1
 	arrowAnim.PushBack({ 220,42,179,135 });// 2
 	arrowAnim.PushBack({ 442,42,179,135 });// 3
@@ -34,12 +35,37 @@ Scene::Scene() : Module()
 	arrowAnim.loop = true;
 	arrowAnim.speed = 0.2f;
 
+	//VOID ANIMATION
 	theVoidAnim.PushBack({ 0,0,794,285 });
 	theVoidAnim.PushBack({ 823,0,802,285 });
 	theVoidAnim.PushBack({ 1678,0,792,285 });
 	theVoidAnim.PushBack({ 823,0,802,285 });
 	theVoidAnim.loop = true;
 	theVoidAnim.speed = 0.1f;
+
+	//PLAY MAIN MENU ANIMATION
+	playAnim.PushBack({ 22, 106, 550, 146 }); //1
+	playAnim.PushBack({ 22, 312, 550, 146 }); //2
+	playAnim.PushBack({ 22, 518, 550, 146 }); //3
+	playAnim.PushBack({ 22, 724, 550, 146 }); //4
+	playAnim.PushBack({ 22, 930, 550, 146 }); //5
+	playAnim.PushBack({ 22, 1136, 550, 146 }); //6
+	playAnim.PushBack({ 22, 1342, 550, 146 }); //7
+	playAnim.PushBack({ 22, 106, 550, 146 }); //1
+	playAnim.loop = false;
+	playAnim.speed = 0.5f;
+
+	//QUIT MAIN MENU ANIMATION
+	quitAnim.PushBack({ 764, 106, 550, 146 }); //1
+	quitAnim.PushBack({ 764, 312, 550, 146 }); //2
+	quitAnim.PushBack({ 764, 518, 550, 146 }); //3
+	quitAnim.PushBack({ 764, 724, 550, 146 }); //4
+	quitAnim.PushBack({ 764, 930, 550, 146 }); //5
+	quitAnim.PushBack({ 764, 1136, 550, 146 }); //6
+	quitAnim.PushBack({ 764, 1342, 550, 146 }); //7
+	quitAnim.PushBack({ 764, 106, 550, 146 }); //1
+	quitAnim.loop = false;
+	quitAnim.speed = 0.5f;
 }
 
 // Destructor
@@ -144,6 +170,9 @@ bool Scene::CleanUp()
 	if (levelSelectionSpritesheet != nullptr && levelSelectionSpritesheet != NULL)
 		app->tex->UnLoad(levelSelectionSpritesheet);
 
+	if (mainMenuSpritesheet != nullptr && mainMenuSpritesheet != NULL)
+		app->tex->UnLoad(mainMenuSpritesheet);
+
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
@@ -194,6 +223,21 @@ void Scene::UpdateMainMenu()
 		app->audio->PlayFx(SFxChangeOption);
 		mainMenuArrow.selection = 2;
 	}
+
+	//Options Main Menu Animations
+	if (mainMenuArrow.selection == 1)
+	{
+		playAnim.Update();
+		quitAnim.Reset();
+	}
+	else if (mainMenuArrow.selection == 2)
+	{
+		quitAnim.Update();
+		playAnim.Reset();
+	}
+
+	app->render->DrawTexture(mainMenuSpritesheet, 725, 675, &playAnim.GetCurrentFrame());
+	app->render->DrawTexture(mainMenuSpritesheet, 725, 850, &quitAnim.GetCurrentFrame());
 }
 
 void Scene::UpdateLevelSelector()
@@ -423,6 +467,8 @@ void Scene::SetScene(SceneType changeScene)
 void Scene::SetMainMenu()
 {
 	mainMenuBackgroundTex = app->tex->Load("Assets/textures/MAIN_MENU_TEMP_BACKGROUND.jpg");
+
+	mainMenuSpritesheet = app->tex->Load("Assets/textures/title_options.png");
 
 	mainMenuArrow.arrowTex = app->tex->Load("Assets/textures/Arrow_Spritesheet.png");
 	mainMenuArrow.selection = 1;
