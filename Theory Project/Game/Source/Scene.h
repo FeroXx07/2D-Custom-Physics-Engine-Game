@@ -18,6 +18,11 @@ enum SceneType
 	PAUSE_MENU
 };
 
+enum PlanetType
+{
+	ROCK,
+	WATER
+};
 struct Planet
 {
 public:
@@ -31,6 +36,7 @@ public:
 
 	CircleCollider planet;
 	CircleCollider orbit;
+	PlanetType type = ROCK;
 };
 
 struct Meteor
@@ -133,6 +139,8 @@ private:
 	SDL_Texture* levelSelectionSpritesheet;
 	SDL_Texture* mainMenuSpritesheet;
 	SDL_Texture* mainMenuTitle;
+	SDL_Texture* ringAndMeteorTexture;
+	SDL_Texture* levelDifficultyTexture;
 
 	const SDL_Rect lvlSelect = { 0, 0, 506, 76 };
 	const SDL_Rect back = { 506, 0, 306, 76 };
@@ -153,6 +161,12 @@ private:
 	Animation pauseResume;
 	Animation pauseLS;
 	Animation pauseMM;
+	Animation theRingAnim;
+
+	Animation level1StartAnim;
+	Animation level2StartAnim;
+	Animation level3StartAnim;
+	Animation winnerAnim;
 
 	uint SFxOrbitEnter;
 	uint SFxDestroyed;
@@ -162,8 +176,11 @@ private:
 
 	float counterSpawn;
 	float winCounter;
+	bool winnner = false;
 	CircleCollider listRandom[5];
 	int previousRandom;
+
+	float counter;
 public:
 	List<Planet*> planets;
 	List<Body*> bodies;

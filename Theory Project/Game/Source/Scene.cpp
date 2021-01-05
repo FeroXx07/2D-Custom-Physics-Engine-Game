@@ -140,7 +140,46 @@ Scene::Scene() : Module()
 	pauseMM.loop = false;
 	pauseMM.speed = 0.3f;
 
+	theRingAnim.PushBack({ 10,0,97,200 });
+	theRingAnim.PushBack({ 126,0,97,200 });
+	theRingAnim.PushBack({ 244,0,97,200 });
+	theRingAnim.PushBack({ 363,0,97,200 });
+	theRingAnim.PushBack({ 480,0,97,200 });
+	theRingAnim.PushBack({ 363,0,97,200 });
+	theRingAnim.PushBack({ 244,0,97,200 });
+	theRingAnim.PushBack({ 126,0,97,200 });
+	theRingAnim.loop = true;
+	theRingAnim.speed = 0.1f;
 
+	level1StartAnim.PushBack({ 72,35,196,106 });
+	level1StartAnim.PushBack({ 267,24,200,106 });
+	level1StartAnim.PushBack({ 467,15,200,106 });
+	level1StartAnim.PushBack({ 667,7,202,106 });
+	level1StartAnim.PushBack({ 869,1,217,106 });
+	level1StartAnim.pingpong = true;
+	level1StartAnim.speed = 0.1f;
+
+	level2StartAnim.PushBack({ 67,114,200,106 });
+	level2StartAnim.PushBack({ 268,114,200,106 });
+	level2StartAnim.PushBack({ 480,114,200,106 });
+	level2StartAnim.PushBack({ 681,114,220,106 });
+	level2StartAnim.PushBack({ 900,114,220,106 });
+	level2StartAnim.pingpong = true;
+	level2StartAnim.speed = 0.1f;
+
+	level3StartAnim.PushBack({ 67,238,197,106 });
+	level3StartAnim.PushBack({ 263,238,200,106 });
+	level3StartAnim.PushBack({ 480,238,200,106 });
+	level3StartAnim.PushBack({ 692,238,213,106 });
+	level3StartAnim.PushBack({ 906,238,220,106 });
+	level3StartAnim.pingpong = true;
+	level3StartAnim.speed = 0.1f;
+
+	winnerAnim.PushBack({ 0,377,155,61 });
+	winnerAnim.PushBack({ 295,377,260,61 });
+	winnerAnim.PushBack({ 582,377,260,61 });
+	winnerAnim.pingpong = true;
+	winnerAnim.speed = 0.1f;
 }
 
 // Destructor
@@ -254,6 +293,12 @@ bool Scene::CleanUp()
 	if (mainMenuTitle != nullptr && mainMenuTitle != NULL)
 		app->tex->UnLoad(mainMenuTitle);
 
+	if (ringAndMeteorTexture != nullptr && ringAndMeteorTexture != NULL)
+		app->tex->UnLoad(ringAndMeteorTexture);
+
+	if (levelDifficultyTexture != nullptr && levelDifficultyTexture != NULL)
+		app->tex->UnLoad(levelDifficultyTexture);
+
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
@@ -272,7 +317,9 @@ bool Scene::CleanUp()
 
 	app->player->Disable();
 	app->physics->CleanUp();
+
 	theVoid = nullptr;
+	theRing = nullptr;
 
 	return true;
 }
@@ -285,7 +332,7 @@ void Scene::UpdateMainMenu()
 
 	app->render->DrawTexture(mainMenuBackgroundTex, 0, 0);
 
-	app->render->DrawTexture(mainMenuTitle, 690, 100, &titleAnim.GetCurrentFrame());
+	app->render->DrawTexture(mainMenuTitle, 1920/2 - titleAnim.GetCurrentFrame().w/2, 100, &titleAnim.GetCurrentFrame());
 	titleAnim.Update();
 
 	app->render->DrawTexture(mainMenuArrow.arrowTex, mainMenuArrow.position[mainMenuArrow.selection].x, mainMenuArrow.position[mainMenuArrow.selection].y, &arrowAnim.GetCurrentFrame());
@@ -332,7 +379,7 @@ void Scene::UpdateLevelSelector()
 
 	app->render->DrawTexture(levelSelectArrow.arrowTex, levelSelectArrow.position[levelSelectArrow.selection].x, levelSelectArrow.position[levelSelectArrow.selection].y, &arrowAnim.GetCurrentFrame());
 
-	app->render->DrawTexture(levelSelectionSpritesheet, 700, 150, &lvlSelect);
+	app->render->DrawTexture(levelSelectionSpritesheet, 1920/2 - lvlSelect.w/2, 150, &lvlSelect);
 
 	app->render->DrawTexture(levelSelectionSpritesheet, 300 + 190, 840, &back);
 
@@ -410,14 +457,65 @@ void Scene::UpdateLevels()
 		if (app->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
 			SetScene(GetScene());
 
+		// STARTING ANIMATIONS FOR EACH LEVEL
+		switch (GetScene())
+		{
+		case LEVEL_1:
+		{
+			counter -= 1.0 / 60.0f;
+			if (counter >= 0.0f)
+			{
+				level1StartAnim.Update();
+				app->render->DrawTexture(levelDifficultyTexture, 700, 50, &level1StartAnim.GetCurrentFrame());
+			}
+			break;
+		}
+		case LEVEL_2:
+		{
+			counter -= 1.0 / 60.0f;
+			if (counter >= 0.0f)
+			{
+				level2StartAnim.Update();
+				app->render->DrawTexture(levelDifficultyTexture, 900, 200, &level2StartAnim.GetCurrentFrame());
+			}
+			break;
+		}
+		case LEVEL_3:
+		{
+			counter -= 1.0 / 60.0f;
+			if (counter >= 0.0f)
+			{
+				level3StartAnim.Update();
+				app->render->DrawTexture(levelDifficultyTexture, 750, 50, &level3StartAnim.GetCurrentFrame());
+			}
+			break;
+		}
+		default:
+			break;
+		}
+
+
+		// WIN CONDITION FOR LEVEL 3
 		if (GetScene() == LEVEL_3)
 		{
 			winCounter += 1.0 / 60.0f;
 			counterSpawn += 1.0 / 60.0f;
 
+			if (winnner)
+			{
+				winnerAnim.Update();
+				app->render->DrawTexture(levelDifficultyTexture, 750, 50, &winnerAnim.GetCurrentFrame());
+				if (winCounter >= 5.0f)
+				{
+					SetScene(MAIN_MENU);
+				}
+			}
+
 			if (winCounter >= 30.0f)
 			{
-				SetScene(MAIN_MENU);
+				winnner = true;
+				winCounter = 0.0f;
+				//SetScene(MAIN_MENU);
 			}
 
 			if (counterSpawn >= 2.0f)
@@ -429,7 +527,6 @@ void Scene::UpdateLevels()
 					previousRandom = random;
 					AddPlanet(listRandom[random], 10);
 				}
-				
 
 				ListItem<Planet*>* list;
 				for (list = planets.start; list != NULL; list = list->next)
@@ -455,10 +552,10 @@ void Scene::UpdateLevels()
 		app->player->onOrbit = false;
 
 		bool inWater = false;
-		for (ListItem<Planet*>* list = planets.start; list && app->player->onOrbit == false; list = list->next)
+		for (ListItem<Planet*>* list = planets.start; list != NULL && list->data != NULL && app->player->onOrbit == false; list = list->next)
 		{
 			// Check if reached loose condition
-			if (list->data == theVoid)
+			if (list->data == theVoid && winnner == false)
 			{
 				if (app->player->playerBody->position.y >= theVoid->planetBody->position.y)
 				{
@@ -520,13 +617,12 @@ void Scene::UpdateLevels()
 
 			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
 			{
-				// Collision with PLANET
-				if (list->data->planetBody->name == SString("rockPlanet"))
+				if (list->data->type == ROCK)
 				{
 					app->audio->PlayFx(SFxDestroyed);
 					SetScene(GetScene());
 				}
-				if (list->data->planetBody->name == SString("waterPlanet"))
+				if (list->data->type == WATER)
 				{
 					app->player->playerBody->buoyancyActive = true;
 					inWater = true;
@@ -544,11 +640,11 @@ void Scene::UpdateLevels()
 		}
 
 		// Draw & Check Collisions with meteors
-		for (ListItem<Meteor*>* listMeteors = meteors.start; listMeteors; listMeteors = listMeteors->next)
+		for (ListItem<Meteor*>* listMeteors = meteors.start; listMeteors != NULL; listMeteors = listMeteors->next)
 		{
-			SDL_Rect toDraw = { 0,0, listMeteors->data->colliderRect.r1.w, listMeteors->data->colliderRect.r1.h };
+			SDL_Rect toDraw = { 414,643, listMeteors->data->colliderRect.r1.w, listMeteors->data->colliderRect.r1.h };
 		
-			app->render->DrawTexture(meteorTexture, listMeteors->data->meteorBody->position.x, listMeteors->data->meteorBody->position.y, &toDraw);
+			app->render->DrawTexture(ringAndMeteorTexture, listMeteors->data->meteorBody->position.x, listMeteors->data->meteorBody->position.y, &toDraw);
 
 			if (listMeteors->data->colliderRect.CheckCollision(listMeteors->data->colliderRect.r1, app->player->playerBody->collider->r1))
 			{
@@ -558,6 +654,7 @@ void Scene::UpdateLevels()
 		}
 
 		theVoidAnim.Update();
+		theRingAnim.Update();
 
 		// Draw player
 		app->render->DrawTexture(app->player->img, METERS_TO_PIXELS(app->player->playerBody->position.x) - 10, METERS_TO_PIXELS(app->player->playerBody->position.y) - 2, NULL, 0.0f, (app->player->playerBody->rotation));
@@ -574,7 +671,10 @@ void Scene::UpdateLevels()
 			}
 
 			if (list->data == theRing)
+			{
+				app->render->DrawTexture(ringAndMeteorTexture, theRing->planetBody->position.x - 50, theRing->planetBody->position.y - 100, &theRingAnim.GetCurrentFrame());
 				continue;
+			}
 
 			// Draw void
 			if (list->data == theVoid)
@@ -583,13 +683,10 @@ void Scene::UpdateLevels()
 				continue;
 			}
 
-			SString rock = "rockPlanet";
-			SString water = "waterPlanet";
-
 			// Draw planet & orbit
-			if (list->data->planetBody->name == rock)
+			if (list->data->type == ROCK)
 				app->render->DrawTexture(rockPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
-			else if (list->data->planetBody->name == water)
+			else if (list->data->type == WATER)
 				app->render->DrawTexture(waterPlanetTexture, currentPlanet.x - 10, currentPlanet.y - 10);
 
 			app->render->DrawTexture(orbitTexture, currentOrbit.x - 100, currentOrbit.y - 100);
@@ -653,7 +750,6 @@ void Scene::UpdatePauseMenu()
 
 
 //SETTERS
-
 void Scene::SetScene(SceneType changeScene)
 {
 	CleanUp();
@@ -727,13 +823,15 @@ void Scene::SetLevel1()
 	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
+	ringAndMeteorTexture = app->tex->Load("Assets/textures/final_ring_and_obstacle.png");
+	levelDifficultyTexture = app->tex->Load("Assets/textures/difficulty_levels.png");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
 
-	AddPlanet(CircleCollider(150, 150, 100), 60,"waterPlanet");
-	AddPlanet(CircleCollider(150, 500, 100), 60,"waterPlanet");
+	AddPlanet(CircleCollider(150, 150, 100), 10,"waterPlanet")->type = WATER;
+	AddPlanet(CircleCollider(150, 500, 100), 10,"waterPlanet")->type = WATER;
 
 	AddMeteor(Collider({ 300,60,20,180 }));
 	AddMeteor(Collider({ 300,360,20,220 }));
@@ -764,6 +862,8 @@ void Scene::SetLevel1()
 
 	// To adjust colliders to their correct positions, only once in the start
 	app->physics->Step(1.0f / 60.0f);
+
+	counter = 5.0f;
 }
 
 void Scene::SetLevel2()
@@ -781,29 +881,31 @@ void Scene::SetLevel2()
 	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
+	ringAndMeteorTexture = app->tex->Load("Assets/textures/final_ring_and_obstacle.png");
+	levelDifficultyTexture = app->tex->Load("Assets/textures/difficulty_levels.png");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
 	SFxDestroyed = app->audio->LoadFx("Assets/audio/fx/CRASH_SHIP_FX.wav");
 
-	AddPlanet(CircleCollider(150, 150, 80), 10);
-	AddPlanet(CircleCollider(450, 0, 80), 10);
-	AddPlanet(CircleCollider(250, 500, 80), 10);
+	AddPlanet(CircleCollider(150, 150, 100), 10);
+	AddPlanet(CircleCollider(450, 0, 100), 10);
+	AddPlanet(CircleCollider(250, 500, 100), 10);
 
 	AddMeteor(Collider({ 450, 150, 20, 220 }));
 	AddMeteor(Collider({ 450, 600, 20, 220 }));
 
-	AddPlanet(CircleCollider(700, 200, 80), 10);
-	AddPlanet(CircleCollider(700, 450, 80), 10);
+	AddPlanet(CircleCollider(700, 200, 100), 10);
+	AddPlanet(CircleCollider(700, 450, 100), 10);
 
 	AddMeteor(Collider({ 700, 0, 20, 50 }));
 	AddMeteor(Collider({ 800, 300, 220, 20 }));
 
-	AddPlanet(CircleCollider(1000, 0, 80), 10);
-	AddPlanet(CircleCollider(1000, 700, 80), 10);
+	AddPlanet(CircleCollider(1000, 0, 100), 10);
+	AddPlanet(CircleCollider(1000, 700, 100), 10);
 
-	AddPlanet(CircleCollider(1300, 400, 80), 10);
-	AddPlanet(CircleCollider(1400, 50, 80), 5);
+	AddPlanet(CircleCollider(1300, 400, 100), 10);
+	AddPlanet(CircleCollider(1400, 50, 100), 5);
 
 	AddMeteor(Collider({ 1200, 0, 100, 20 }));
 	AddMeteor(Collider({ 1280, 50, 20, 125 }));
@@ -856,6 +958,8 @@ void Scene::SetLevel2()
 	}
 	// To adjust colliders to their correct positions, only once in the start
 	app->physics->Step(1.0f / 60.0f);
+
+	counter = 5.0f;
 }
 
 void Scene::SetLevel3()
@@ -872,6 +976,8 @@ void Scene::SetLevel3()
 	waterPlanetTexture = app->tex->Load("Assets/textures/WATER_PLANET.png");
 	orbitTexture = app->tex->Load("Assets/textures/ORBIT.png");
 	theVoidTexture = app->tex->Load("Assets/textures/void.png");
+	ringAndMeteorTexture = app->tex->Load("Assets/textures/final_ring_and_obstacle.png");
+	levelDifficultyTexture = app->tex->Load("Assets/textures/difficulty_levels.png");
 
 	app->audio->PlayMusic("Assets/audio/Music/GAME_MUSIC.ogg", 0);
 	SFxOrbitEnter = app->audio->LoadFx("Assets/audio/fx/ORBIT_ENTER_FX.wav");
@@ -940,6 +1046,8 @@ void Scene::SetLevel3()
 
 	counterSpawn = 0.0f;
 	winCounter = 0.0f;
+	counter = 5.0f;
+	winnner = false;
 
 	app->physics->Step(1.0f / 60.0f);
 }

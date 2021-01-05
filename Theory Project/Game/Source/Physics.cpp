@@ -229,12 +229,14 @@ Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_ , fPoin
 	{
 		Body* newBody = new StaticBody(position_, colliderType_, texture_, collider_,mass_);
 		bodyList.add(newBody);
+		newBody->name = "noName";
 		return newBody;
 	}
 	else if (bodyType_ == DYNAMIC_BODY)
 	{
 		Body* newBody = new DynamicBody(position_,velocity_, gravity_, acceleration_,colliderType_, texture_, collider_,mass_);
 		bodyList.add(newBody);
+		newBody->name = "noName";
 		return newBody;
 	}
 }
@@ -247,12 +249,14 @@ Body* Physics::CreateBody(BodyType bodyType_, ColliderType colliderType_, fPoint
 	{
 		Body* newBody = new StaticBody(position_,colliderType_, texture_, collider_, mass_);
 		bodyList.add(newBody);
+		newBody->name = "noName";
 		return newBody;
 	}
 	else if (bodyType_ == DYNAMIC_BODY)
 	{
 		Body* newBody = new DynamicBody(position_,velocity_, gravity_, acceleration_, colliderType_, texture_, collider_, mass_);
 		bodyList.add(newBody);
+		newBody->name = "noName";
 		return newBody;
 	}
 }
