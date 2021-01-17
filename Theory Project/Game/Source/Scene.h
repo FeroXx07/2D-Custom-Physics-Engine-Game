@@ -34,8 +34,8 @@ public:
 	DynamicBody* planetBody = nullptr;
 	DynamicBody* orbitBody = nullptr;
 
-	CircleCollider planet;
-	CircleCollider orbit;
+	CircleCollider planet = { 0,0,0 };
+	CircleCollider orbit = { 0,0,0 };
 	PlanetType type = ROCK;
 };
 
@@ -44,7 +44,7 @@ struct Meteor
 public:
 	Meteor(Collider& meteor_) : colliderRect(meteor_) {}
 	DynamicBody* meteorBody = nullptr;
-	Collider colliderRect;
+	Collider colliderRect = { {0,0,0,0}, };
 };
 
 struct MMSelectorArrow
@@ -124,6 +124,9 @@ private:
 	void SetLevel2();
 	void SetLevel3();
 	void SetPauseMenu();
+
+	void IterateMeteors();
+	void IteratePlanets();
 
 private:
 	SDL_Texture* mainMenuBackgroundTex;

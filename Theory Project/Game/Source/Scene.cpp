@@ -302,6 +302,7 @@ bool Scene::CleanUp()
 	ListItem<Planet*>* listPlanet;
 	for (listPlanet = planets.start; listPlanet != NULL; listPlanet = listPlanet->next)
 	{
+		RELEASE(listPlanet->data);
 		delete listPlanet->data;
 		planets.del(listPlanet);
 	}
@@ -310,6 +311,7 @@ bool Scene::CleanUp()
 	ListItem<Meteor*>* listMeteors;
 	for (listMeteors = meteors.start; listMeteors != NULL; listMeteors = listMeteors->next)
 	{
+		RELEASE(listMeteors->data);
 		delete listMeteors->data;
 		meteors.del(listMeteors);
 	}
@@ -551,107 +553,9 @@ void Scene::UpdateLevels()
 
 		app->player->onOrbit = false;
 
-		bool inWater = false;
-		for (ListItem<Planet*>* list = planets.start; list != NULL && list->data != NULL && app->player->onOrbit == false; list = list->next)
-		{
-			// Check if reached loose condition
-			if (list->data == theVoid && winnner == false)
-			{
-				if (app->player->playerBody->position.y >= theVoid->planetBody->position.y)
-				{
-					app->audio->PlayFx(SFxDestroyed);
-					SetScene(GetScene());
-				}
-				continue;
-			}
+		IteratePlanets();
+		IterateMeteors();
 
-			// Check if reached win condition
-			if (list->data == theRing)
-			{
-				if (app->player->playerBody->collider->CheckCollision(list->data->planet, app->player->playerBody->collider->r1))
-				{
-					// Collision with RING
-					switch (GetScene())
-					{
-					case LEVEL_1:
-						SetScene(LEVEL_2);
-						break;
-					case LEVEL_2:
-						SetScene(LEVEL_3);
-						break;
-					case LEVEL_3:
-						SetScene(MAIN_MENU);
-						break;
-					default:
-						break;
-					}
-				}
-			}
-
-			CircleCollider currentPlanet = list->data->planet;
-			CircleCollider currentOrbit = list->data->orbit;
-
-			// Check collisions with planets
-			if (app->player->onOrbit = app->player->playerBody->collider->CheckCollision(currentOrbit, app->player->playerBody->collider->r1))
-			{
-				if (app->player->previousOrbitCollider != &list->data->orbit)
-				{
-					app->audio->PlayFx(SFxOrbitEnter);
-					app->player->previousOrbitCollider = &list->data->orbit;
-				}
-				// Collision with orbit
-				LOG("ORBIT!!!!");
-				float force = 55.0f;
-
-				fPoint directionGravity = fPoint({ currentPlanet.x,currentPlanet.y }) - app->player->playerBody->position;
-
-				float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
-
-				directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
-				directionGravity = { directionGravity.x * force, directionGravity.y * force };
-
-				app->player->playerBody->SetGravityAcceleration(directionGravity);
-				app->player->playerBody->coeficientAeroDrag = { 0.1f, 0.1f };
-
-			}
-
-			if (app->player->playerBody->collider->CheckCollision(currentPlanet, app->player->playerBody->collider->r1))
-			{
-				if (list->data->type == ROCK)
-				{
-					app->audio->PlayFx(SFxDestroyed);
-					SetScene(GetScene());
-				}
-				if (list->data->type == WATER)
-				{
-					app->player->playerBody->buoyancyActive = true;
-					inWater = true;
-				}
-			}
-		}
-		if (inWater == false)
-		{
-			app->player->playerBody->buoyancyActive = false;
-			app->player->playerBody->hydroControlParameter = 0.0f;
-		}
-		else
-		{
-			app->player->playerBody->hydroControlParameter = 10.0f;
-		}
-
-		// Draw & Check Collisions with meteors
-		for (ListItem<Meteor*>* listMeteors = meteors.start; listMeteors != NULL; listMeteors = listMeteors->next)
-		{
-			SDL_Rect toDraw = { 414,643, listMeteors->data->colliderRect.r1.w, listMeteors->data->colliderRect.r1.h };
-		
-			app->render->DrawTexture(ringAndMeteorTexture, listMeteors->data->meteorBody->position.x, listMeteors->data->meteorBody->position.y, &toDraw);
-
-			if (listMeteors->data->colliderRect.CheckCollision(listMeteors->data->colliderRect.r1, app->player->playerBody->collider->r1))
-			{
-				app->audio->PlayFx(SFxDestroyed);
-				SetScene(GetScene());
-			}
-		}
 
 		theVoidAnim.Update();
 		theRingAnim.Update();
@@ -1072,4 +976,203 @@ void Scene::SetPauseMenu()
 		// RETURN LEVEL SELECTOR
 		// RETURN GAME
 	// LOAD IMAGE SELECTOR TRIANGLE
+}
+
+void Scene::IterateMeteors()
+{
+	int i = 0;
+	int count = meteors.count();
+	while (i < count)
+	{
+		Meteor* listMeteors = meteors.At(i)->data;
+
+		SDL_Rect toDraw = { 414,643, listMeteors->colliderRect.r1.w, listMeteors->colliderRect.r1.h };
+
+		app->render->DrawTexture(ringAndMeteorTexture, listMeteors->meteorBody->position.x, listMeteors->meteorBody->position.y, &toDraw);
+
+		if (listMeteors->colliderRect.CheckCollision(listMeteors->colliderRect.r1, app->player->playerBody->collider->r1))
+		{
+			app->audio->PlayFx(SFxDestroyed);
+			SetScene(GetScene());
+		}
+
+		++i;
+	}
+}
+
+void Scene::IteratePlanets()
+{
+	bool inWater = false;
+	int i = 0;
+	int count = planets.count();
+	while (i < count)
+	{
+		Planet* currentPlanet = planets.At(i)->data;
+		// Check if reached loose condition
+		if (currentPlanet == theVoid && winnner == false)
+		{
+			if (app->player->playerBody->position.y >= theVoid->planetBody->position.y)
+			{
+				app->audio->PlayFx(SFxDestroyed);
+				SetScene(GetScene());
+			}
+			++i;
+			continue;
+		}
+
+		// Check if reached win condition
+		if (currentPlanet == theRing)
+		{
+			if (app->player->playerBody->collider->CheckCollision(currentPlanet->planet, app->player->playerBody->collider->r1))
+			{
+				// Collision with RING
+				switch (GetScene())
+				{
+				case LEVEL_1:
+					SetScene(LEVEL_2);
+					break;
+				case LEVEL_2:
+					SetScene(LEVEL_3);
+					break;
+				case LEVEL_3:
+					SetScene(MAIN_MENU);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		CircleCollider planet = currentPlanet->planet;
+		CircleCollider orbit = currentPlanet->orbit;
+
+		// Check collisions with planets
+		if (app->player->playerBody->collider->CheckCollision(orbit, app->player->playerBody->collider->r1))
+		{
+			app->player->onOrbit = true;
+
+			if (app->player->previousOrbitCollider != &currentPlanet->orbit)
+			{
+				app->audio->PlayFx(SFxOrbitEnter);
+				app->player->previousOrbitCollider = &currentPlanet->orbit;
+			}
+			// Collision with orbit
+			LOG("ORBIT!!!!");
+			float force = 55.0f;
+
+			fPoint directionGravity = fPoint({ planet.x,planet.y }) - app->player->playerBody->position;
+
+			float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+			directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+			directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+			app->player->playerBody->SetGravityAcceleration(directionGravity);
+			app->player->playerBody->coeficientAeroDrag = { 0.1f, 0.1f };
+
+		}
+
+		if (app->player->playerBody->collider->CheckCollision(planet, app->player->playerBody->collider->r1))
+		{
+			if (currentPlanet->type == ROCK)
+			{
+				app->audio->PlayFx(SFxDestroyed);
+				SetScene(GetScene());
+			}
+			if (currentPlanet->type == WATER)
+			{
+				app->player->playerBody->buoyancyActive = true;
+				inWater = true;
+			}
+		}
+
+		++i;
+	}
+	//for (ListItem<Planet*>* list = planets.start; list != NULL && list->data != NULL && app->player->onOrbit == false; list = list->next)
+	//{
+	//	// Check if reached loose condition
+	//	if (list->data == theVoid && winnner == false)
+	//	{
+	//		if (app->player->playerBody->position.y >= theVoid->planetBody->position.y)
+	//		{
+	//			app->audio->PlayFx(SFxDestroyed);
+	//			SetScene(GetScene());
+	//		}
+	//		continue;
+	//	}
+
+	//	// Check if reached win condition
+	//	if (list->data == theRing)
+	//	{
+	//		if (app->player->playerBody->collider->CheckCollision(list->data->planet, app->player->playerBody->collider->r1))
+	//		{
+	//			// Collision with RING
+	//			switch (GetScene())
+	//			{
+	//			case LEVEL_1:
+	//				SetScene(LEVEL_2);
+	//				break;
+	//			case LEVEL_2:
+	//				SetScene(LEVEL_3);
+	//				break;
+	//			case LEVEL_3:
+	//				SetScene(MAIN_MENU);
+	//				break;
+	//			default:
+	//				break;
+	//			}
+	//		}
+	//	}
+
+	//	CircleCollider planet = list->data->planet;
+	//	CircleCollider orbit = list->data->orbit;
+
+	//	// Check collisions with planets
+	//	if (app->player->onOrbit = app->player->playerBody->collider->CheckCollision(orbit, app->player->playerBody->collider->r1))
+	//	{
+	//		if (app->player->previousOrbitCollider != &list->data->orbit)
+	//		{
+	//			app->audio->PlayFx(SFxOrbitEnter);
+	//			app->player->previousOrbitCollider = &list->data->orbit;
+	//		}
+	//		// Collision with orbit
+	//		LOG("ORBIT!!!!");
+	//		float force = 55.0f;
+
+	//		fPoint directionGravity = fPoint({ planet.x,planet.y }) - app->player->playerBody->position;
+
+	//		float magnitude = sqrt(pow(directionGravity.x, 2) + pow(directionGravity.y, 2));
+
+	//		directionGravity = { directionGravity.x / magnitude, directionGravity.y / magnitude };
+	//		directionGravity = { directionGravity.x * force, directionGravity.y * force };
+
+	//		app->player->playerBody->SetGravityAcceleration(directionGravity);
+	//		app->player->playerBody->coeficientAeroDrag = { 0.1f, 0.1f };
+
+	//	}
+
+	//	if (app->player->playerBody->collider->CheckCollision(planet, app->player->playerBody->collider->r1))
+	//	{
+	//		if (list->data->type == ROCK)
+	//		{
+	//			app->audio->PlayFx(SFxDestroyed);
+	//			SetScene(GetScene());
+	//		}
+	//		if (list->data->type == WATER)
+	//		{
+	//			app->player->playerBody->buoyancyActive = true;
+	//			inWater = true;
+	//		}
+	//	}
+	//}
+
+	if (inWater == false)
+	{
+		app->player->playerBody->buoyancyActive = false;
+		app->player->playerBody->hydroControlParameter = 0.0f;
+	}
+	else
+	{
+		app->player->playerBody->hydroControlParameter = 10.0f;
+	}
 }
