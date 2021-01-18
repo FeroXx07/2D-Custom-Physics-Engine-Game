@@ -11,6 +11,9 @@ A sapceship game made for the subject of video Physics II of the grade of develo
 ## Source Code
 https://github.com/FeroXx07/Theory-Project/tree/main/Theory%20Project/Game/Source
 
+## Download the game
+https://github.com/FeroXx07/Theory-Project/releases/tag/final
+
 ## Developers
 
  - Shahid, Ali Hassan - Programmer
